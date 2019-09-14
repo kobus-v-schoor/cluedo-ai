@@ -1,4 +1,5 @@
 #pragma once
+#include "macros.h"
 #include <vector>
 #include <utility>
 
@@ -78,6 +79,7 @@ class AI {
             /**
              * \param pos This is the integer position used in the board layout
              */
+            NOT_IMPLEMENTED
             Position(int pos);
         };
 
@@ -101,6 +103,7 @@ class AI {
          * \brief AI class constructor
          * \param player The player the AI will be playing as
          */
+        NOT_IMPLEMENTED
         AI(Player player);
 
         /**
@@ -108,6 +111,7 @@ class AI {
          *
          * This will be used in the beginning of the game when the player gets dealt various cards
          */
+        NOT_IMPLEMENTED
         void setCards(std::vector<Card> cards);
 
         /**
@@ -116,6 +120,7 @@ class AI {
          * This should be used when the AI gets initialized either at the beginning of the game or
          * when an AI player replaces a human player
          */
+        NOT_IMPLEMENTED
         void updateBoard(std::vector<std::pair<Player, Position>> players);
 
         /**
@@ -123,6 +128,7 @@ class AI {
          *
          * This will update the internal game state to match the player's new position
          */
+        NOT_IMPLEMENTED
         void movePlayer(Player player, Position position);
 
         /**
@@ -130,6 +136,7 @@ class AI {
          *
          * \param player The player who made the suggestion
          */
+        NOT_IMPLEMENTED
         void madeSuggestion(Player player, Suggestion suggestion);
 
         /**
@@ -141,6 +148,7 @@ class AI {
          * \param asked The player that asked the question/made a suggestion
          * \param showed The player that showed the other player a card
          */
+        NOT_IMPLEMENTED
         void shownCard(Player asked, Player showed);
 
         /**
@@ -152,6 +160,7 @@ class AI {
          * \param allowedMoves the amount of moves that the AI can make (i.e. dice roll count)
          * \returns the position where the AI wants to move
          */
+        NOT_IMPLEMENTED
         Position getMove(int allowedMoves);
 
         /**
@@ -162,6 +171,7 @@ class AI {
          *
          * \returns the suggestion made by the AI. An accusation if the AI is in the center room.
          */
+        NOT_IMPLEMENTED
         Suggestion getSuggestion();
 
         /**
@@ -172,6 +182,7 @@ class AI {
          *
          * \returns the card to show to the other player
          */
+        NOT_IMPLEMENTED
         Card getCard(Suggestion suggestion);
 };
 
