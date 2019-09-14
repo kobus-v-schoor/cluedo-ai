@@ -68,7 +68,8 @@ tests/ai.o: \
 
 src/ai.o: \
  src/ai.cpp \
- include/ai.h
+ include/ai.h \
+ include/macros.h
 	$(go) src/ai.cpp -o src/ai.o
 
 run: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
@@ -81,7 +82,7 @@ clean:
 	rm -f test.o tests/ai.o src/ai.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/ai.h tests/ai.cpp src/ai.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/ai.h tests/ai.cpp src/ai.cpp include/macros.h makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile
