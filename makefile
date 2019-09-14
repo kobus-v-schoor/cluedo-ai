@@ -51,12 +51,25 @@ last_build:
 	echo debug > last_build
 
 test: \
- test.o
-	g++ $(gf) test.o -o test
+ test.o \
+ t_ai.o \
+ ai.o
+	g++ $(gf) test.o t_ai.o ai.o -o test
 
 test.o: \
- test.cpp
+ test.cpp \
+ ai.h
 	$(go) test.cpp -o test.o
+
+t_ai.o: \
+ t_ai.cpp \
+ ai.h
+	$(go) t_ai.cpp -o t_ai.o
+
+ai.o: \
+ ai.cpp \
+ ai.h
+	$(go) ai.cpp -o ai.o
 
 run: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
 	./test
@@ -65,8 +78,8 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o ai.tar.gz test
+	rm -f test.o t_ai.o ai.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp ai.h t_ai.cpp ai.cpp makefile -f ai.tar.gz
 
