@@ -2,4 +2,4 @@
 #include <catch/catch.hpp>
 
 // Include headers of classes that are going to be tested here
-#include "ai.h"
+#include "include/ai.h"

@@ -52,24 +52,24 @@ last_build:
 
 test: \
  test.o \
- t_ai.o \
- ai.o
-	g++ $(gf) test.o t_ai.o ai.o -o test
+ tests/ai.o \
+ src/ai.o
+	g++ $(gf) test.o tests/ai.o src/ai.o -o test
 
 test.o: \
  test.cpp \
- ai.h
+ include/ai.h
 	$(go) test.cpp -o test.o
 
-t_ai.o: \
- t_ai.cpp \
- ai.h
-	$(go) t_ai.cpp -o t_ai.o
+tests/ai.o: \
+ tests/ai.cpp \
+ include/ai.h
+	$(go) tests/ai.cpp -o tests/ai.o
 
-ai.o: \
- ai.cpp \
- ai.h
-	$(go) ai.cpp -o ai.o
+src/ai.o: \
+ src/ai.cpp \
+ include/ai.h
+	$(go) src/ai.cpp -o src/ai.o
 
 run: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
 	./test
@@ -78,8 +78,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o t_ai.o ai.o ai.tar.gz test
+	rm -f test.o tests/ai.o src/ai.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp ai.h t_ai.cpp ai.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/ai.h tests/ai.cpp src/ai.cpp makefile -f ai.tar.gz
 
+doc:
+	doxygen doxyfile
