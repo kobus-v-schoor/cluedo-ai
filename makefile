@@ -58,12 +58,14 @@ test: \
 
 test.o: \
  test.cpp \
- include/ai.h
+ include/ai.h \
+ include/macros.h
 	$(go) test.cpp -o test.o
 
 tests/ai.o: \
  tests/ai.cpp \
- include/ai.h
+ include/ai.h \
+ include/macros.h
 	$(go) tests/ai.cpp -o tests/ai.o
 
 src/ai.o: \
@@ -82,7 +84,7 @@ clean:
 	rm -f test.o tests/ai.o src/ai.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/ai.h tests/ai.cpp src/ai.cpp include/macros.h makefile -f ai.tar.gz
+	tar -chvz test.cpp include/ai.h include/macros.h tests/ai.cpp src/ai.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile

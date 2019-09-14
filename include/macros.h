@@ -9,13 +9,9 @@
  *
  * This is intended to be only used during development
  *
- * \warning This attribute it g++ specific and will probably not work on other compilers so this
- * will automatically disable when g++ is not being used.
+ * \note This only uses the deprecated attribute because it is portable between clang and g++, the
+ * function is not actually deprected it is just not implemented yet.
  */
-#ifdef __GNUG__
-#define NOT_IMPLEMENTED __attribute__((__warning__("Function not yet implemented (stub)")))
-#else
-#define NOT_IMPLEMENTED
-#endif
+#define NOT_IMPLEMENTED __attribute__((__deprecated__("Function not yet implemented (stub)")))
 
 // vim: set expandtab textwidth=100:
