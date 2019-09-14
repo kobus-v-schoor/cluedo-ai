@@ -1,6 +1,6 @@
 # AI
 
-## Building and running test
+## Building and running the unit tests
 
 First, make sure to install the "catch" using the system package manager:`sudo 
 apt install catch`. After doing this, compile the test suite using `make test`.
