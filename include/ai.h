@@ -5,6 +5,12 @@
 
 /**
  * \brief The main AI class - clients and servers will spawn this class.
+ *
+ * This class can be used to replace a human player in the game of Cluedo. Please note that this
+ * class is stateful, meaning that the instance that you create of this class should be used for the
+ * entirety of the game as the AI will store and learn from data passed to it as the game progresses
+ * (will not just use the current state of the board).
+ *
  * \author Kobus van Schoor
  */
 
@@ -109,7 +115,9 @@ class AI {
         /**
          * \brief Set the cards dealt to the player
          *
-         * This will be used in the beginning of the game when the player gets dealt various cards
+         * This will be used in the beginning of the game when the player gets dealt various cards.
+         * This can also be used when the AI takes over from a human player to inform the AI player
+         * of all the cards the human player has been shown during the game,
          */
         NOT_IMPLEMENTED
         void setCards(std::vector<Card> cards);
