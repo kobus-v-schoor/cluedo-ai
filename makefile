@@ -52,21 +52,34 @@ last_build:
 
 test: \
  test.o \
+ tests/board.o \
  tests/ai.o \
+ src/board.o \
  src/ai.o
-	g++ $(gf) test.o tests/ai.o src/ai.o -o test
+	g++ $(gf) test.o tests/board.o tests/ai.o src/board.o src/ai.o -o test
 
 test.o: \
  test.cpp \
  include/ai.h \
+ include/board.h \
  include/macros.h
 	$(go) test.cpp -o test.o
+
+tests/board.o: \
+ tests/board.cpp \
+ include/board.h
+	$(go) tests/board.cpp -o tests/board.o
 
 tests/ai.o: \
  tests/ai.cpp \
  include/ai.h \
  include/macros.h
 	$(go) tests/ai.cpp -o tests/ai.o
+
+src/board.o: \
+ src/board.cpp \
+ include/board.h
+	$(go) src/board.cpp -o src/board.o
 
 src/ai.o: \
  src/ai.cpp \
@@ -81,10 +94,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/ai.o src/ai.o ai.tar.gz test
+	rm -f test.o tests/board.o tests/ai.o src/board.o src/ai.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/ai.h include/macros.h tests/ai.cpp src/ai.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/ai.h include/board.h include/macros.h tests/board.cpp tests/ai.cpp src/board.cpp src/ai.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile

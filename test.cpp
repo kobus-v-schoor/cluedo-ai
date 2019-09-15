@@ -3,3 +3,4 @@
 
 // Include headers of classes that are going to be tested here
 #include "include/ai.h"
+#include "include/board.h"
