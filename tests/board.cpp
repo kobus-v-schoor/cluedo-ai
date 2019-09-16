@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "../include/board.h"
 
-using namespace Board;
+using namespace AI::Board;
 using Catch::Matchers::VectorContains;
 
 bool contains(std::vector<int> vec, int v) {

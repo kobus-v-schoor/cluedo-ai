@@ -1,10 +1,10 @@
 #include "../include/board.h"
 
-using namespace Board;
+using namespace AI::Board;
 
 std::vector<std::vector<int>> buildGraph();
 
-std::vector<std::vector<int>> Board::board = buildGraph();
+std::vector<std::vector<int>> AI::Board::board = buildGraph();
 
 std::vector<std::vector<int>> buildGraph()
 {

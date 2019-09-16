@@ -53,14 +53,17 @@ last_build:
 test: \
  test.o \
  tests/board.o \
- tests/ai.o \
+ tests/bot.o \
+ tests/position.o \
  src/board.o \
- src/ai.o
-	g++ $(gf) test.o tests/board.o tests/ai.o src/board.o src/ai.o -o test
+ src/bot.o \
+ src/position.o
+	g++ $(gf) test.o tests/board.o tests/bot.o tests/position.o src/board.o src/bot.o src/position.o -o test
 
 test.o: \
  test.cpp \
- include/ai.h \
+ include/bot.h \
+ include/position.h \
  include/board.h \
  include/macros.h
 	$(go) test.cpp -o test.o
@@ -70,22 +73,37 @@ tests/board.o: \
  include/board.h
 	$(go) tests/board.cpp -o tests/board.o
 
-tests/ai.o: \
- tests/ai.cpp \
- include/ai.h \
+tests/bot.o: \
+ tests/bot.cpp \
+ include/bot.h \
+ include/tests.h \
+ include/macros.h \
+ include/position.h
+	$(go) tests/bot.cpp -o tests/bot.o
+
+tests/position.o: \
+ tests/position.cpp \
+ include/position.h \
  include/macros.h
-	$(go) tests/ai.cpp -o tests/ai.o
+	$(go) tests/position.cpp -o tests/position.o
 
 src/board.o: \
  src/board.cpp \
  include/board.h
 	$(go) src/board.cpp -o src/board.o
 
-src/ai.o: \
- src/ai.cpp \
- include/ai.h \
+src/bot.o: \
+ src/bot.cpp \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) src/bot.cpp -o src/bot.o
+
+src/position.o: \
+ src/position.cpp \
+ include/position.h \
  include/macros.h
-	$(go) src/ai.cpp -o src/ai.o
+	$(go) src/position.cpp -o src/position.o
 
 run: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
 	./test
@@ -94,10 +112,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/board.o tests/ai.o src/board.o src/ai.o ai.tar.gz test
+	rm -f test.o tests/board.o tests/bot.o tests/position.o src/board.o src/bot.o src/position.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/ai.h include/board.h include/macros.h tests/board.cpp tests/ai.cpp src/board.cpp src/ai.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/macros.h tests/board.cpp tests/bot.cpp include/tests.h tests/position.cpp src/board.cpp src/bot.cpp src/position.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile
