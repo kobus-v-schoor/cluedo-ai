@@ -12,8 +12,8 @@ TEST_CASE("Position class", "[position]") {
         REQUIRE_NOTHROW(Position(40));
         REQUIRE_NOTHROW(Position(82));
 
-        REQUIRE_THROWS_AS(Position(-1), std::invalid_argument);
-        REQUIRE_THROWS_AS(Position(83), std::invalid_argument);
+        REQUIRE_THROWS_AS(Position(-1), std::invalid_argument&);
+        REQUIRE_THROWS_AS(Position(83), std::invalid_argument&);
 
         REQUIRE_THAT(Position(0).getNeighbours(), Equals(Board::board[0]));
         REQUIRE_THAT(Position(20).getNeighbours(), Equals(Board::board[20]));
