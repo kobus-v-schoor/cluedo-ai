@@ -35,10 +35,10 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion){}
 
 void Bot::shownCard(Player asked, Player showed){}
 
-Position Bot::getMove(int allowedMoves){return Position(0);}
+int Bot::getMove(int allowedMoves){ return 0; }
 
-Bot::Suggestion Bot::getSuggestion(){return Suggestion(Player(0),Weapon(0),Room(0));}
+Bot::Suggestion Bot::getSuggestion(){ return Suggestion(Player(0),Weapon(0),Room(0)); }
 
-Bot::Card Bot::getCard(Suggestion suggestion){return Card(Player(0));}
+Bot::Card Bot::getCard(std::vector<Card> cards){ return Card(Player(0)); }
 
 // vim: set expandtab textwidth=100:

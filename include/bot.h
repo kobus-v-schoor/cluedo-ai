@@ -6,7 +6,7 @@
 
 namespace AI {
     /**
-     * \brief The main AI class - clients and servers will spawn this class.
+     * \brief The main AI class - clients and servers will spawn and use only this class.
      *
      * This class can be used to replace a human player in the game of Cluedo. Please note that this
      * class is stateful, meaning that the instance that you create of this class should be used for
@@ -53,8 +53,8 @@ namespace AI {
             /**
              * \brief Class used to encapsulate a generic card
              *
-             * This class will be used for any parameters that can be of any card type. Using the type
-             * member can be used to cast card back to original type
+             * This class will be used for any parameters that can be of any card type. Using the
+             * type member can be used to cast the card back to its original type
              */
             struct Card {
                 Card(Player p);
@@ -94,7 +94,7 @@ namespace AI {
 
             /**
              * \brief Bot class constructor
-             * \param player The player the AI will be playing as
+             * \param player The board character the AI will be playing as
              */
             NOT_IMPLEMENTED
             Bot(Player player);
@@ -110,7 +110,7 @@ namespace AI {
             void setCards(std::vector<Card> cards);
 
             /**
-             * \brief This can be used to update all the player's positions on the board
+             * \brief This can be used to update all of the player's positions on the board
              *
              * This should be used when the AI gets initialized either at the beginning of the game
              * or when an AI player replaces a human player
@@ -121,7 +121,7 @@ namespace AI {
             /**
              * \brief Used to indicate that a player has moved their position
              *
-             * This will update the internal game state to match the player's new position
+             * This will update the internal board state to match the player's new position
              */
             NOT_IMPLEMENTED
             void movePlayer(Player player, Position position);
@@ -156,7 +156,7 @@ namespace AI {
              * \returns the position where the AI wants to move
              */
             NOT_IMPLEMENTED
-            Position getMove(int allowedMoves);
+            int getMove(int allowedMoves);
 
             /**
              * \brief Used to request a suggestion from the AI.
@@ -172,13 +172,12 @@ namespace AI {
             /**
              * \brief Used to request a card to show to another player that made a suggestion
              *
-             * \param suggestion the suggestion that the other player made. The card will be chosen
-             * from this suggestion
+             * \param cards The cards that the AI has to choose from as specified by the server
              *
              * \returns the card to show to the other player
              */
             NOT_IMPLEMENTED
-            Card getCard(Suggestion suggestion);
+            Card getCard(std::vector<Card> cards);
     };
 }
 
