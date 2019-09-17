@@ -84,6 +84,7 @@ tests/bot.o: \
 tests/position.o: \
  tests/position.cpp \
  include/position.h \
+ include/board.h \
  include/macros.h
 	$(go) tests/position.cpp -o tests/position.o
 
@@ -102,6 +103,7 @@ src/bot.o: \
 src/position.o: \
  src/position.cpp \
  include/position.h \
+ include/board.h \
  include/macros.h
 	$(go) src/position.cpp -o src/position.o
 
