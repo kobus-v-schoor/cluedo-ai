@@ -1,4 +1,5 @@
 #include <catch/catch.hpp>
+#include <stdexcept>
 #include "../include/position.h"
 #include "../include/board.h"
 
@@ -7,6 +8,13 @@ using Catch::Matchers::Equals;
 
 TEST_CASE("Position class", "[position]") {
     SECTION("init") {
+        REQUIRE_NOTHROW(Position(0));
+        REQUIRE_NOTHROW(Position(40));
+        REQUIRE_NOTHROW(Position(82));
+
+        REQUIRE_THROWS_AS(Position(-1), std::invalid_argument);
+        REQUIRE_THROWS_AS(Position(83), std::invalid_argument);
+
         REQUIRE_THAT(Position(0).getNeighbours(), Equals(Board::board[0]));
         REQUIRE_THAT(Position(20).getNeighbours(), Equals(Board::board[20]));
         REQUIRE_THAT(Position(50).getNeighbours(), Equals(Board::board[50]));
@@ -28,6 +36,7 @@ TEST_CASE("Position class", "[position]") {
         REQUIRE(int(Position(36).dist(37)) > 2);
         REQUIRE(int(Position(7).dist(82)) > 2);
         REQUIRE(int(Position(8).dist(10)) > 2);
+        REQUIRE(int(Position(7).dist(19)) > 1);
         // check that passing from one room to another doesn't take a dice roll (using either secret
         // passage or if the rooms are connected)
         REQUIRE(int(Position(7).dist(8)) == 0);
@@ -38,6 +47,7 @@ TEST_CASE("Position class", "[position]") {
     SECTION("multiple turns logic") {
         // test if going through rooms works if multiple turns can be used
         REQUIRE(int(Position(7).dist(82, 2)) == 1);
+        REQUIRE(int(Position(7).dist(19, 2)) == 1);
         REQUIRE(int(Position(3).dist(10, 3)) == 8);
 
         // test that the middle room is never used as a shortcut

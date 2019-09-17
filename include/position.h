@@ -22,6 +22,7 @@ namespace AI {
 
             /**
              * \param pos This is the integer position used in the board layout
+             * \throw std::invalid_argument if position is not a valid board position
              */
             Position(int pos);
 
