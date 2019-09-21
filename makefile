@@ -15,7 +15,7 @@ else
   endif
  else
   ifndef gf
-   gf = -std=c++11 -O3
+   gf = -std=c++11 -O3 -DAI_RELEASE
   endif
   ifndef go
    go = g++ -c $(gf)
@@ -41,7 +41,7 @@ debug: | last_build
 	$(MAKE) test
 
 release: | last_build
-	export gf="-std=c++11 -O3"; \
+	export gf="-std=c++11 -O3 -DAI_RELEASE"; \
 	export go="g++ -c $$gf"; \
 	[[ $$(cat last_build) != release ]] && $(MAKE) clean; \
 	echo release > last_build; \
