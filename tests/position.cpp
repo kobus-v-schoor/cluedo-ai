@@ -6,6 +6,29 @@
 using namespace AI;
 using Catch::Matchers::Equals;
 
+TEST_CASE("Path struct", "[path]") {
+    Position::Path p(25);
+
+    // empty
+    REQUIRE(int(p) == 0);
+
+    // one tile
+    p.append(15);
+    REQUIRE(int(p) == 1);
+
+    // two tiles
+    p.append(10);
+    REQUIRE(int(p) == 2);
+
+    // into room
+    p.append(7);
+    REQUIRE(int(p) == 3);
+
+    // through room - shouldn't add dist
+    p.append(8);
+    REQUIRE(int(p) == 3);
+}
+
 TEST_CASE("Position class", "[position]") {
     SECTION("init") {
         REQUIRE_NOTHROW(Position(0));
@@ -24,9 +47,15 @@ TEST_CASE("Position class", "[position]") {
         // same position
         REQUIRE(Position(0).dist(0) == 0);
         // basic floor path logic
+        REQUIRE(int(Position(10).dist(11)) == 1);
+        REQUIRE(int(Position(10).dist(16)) == 2);
+        REQUIRE(int(Position(10).dist(17)) == 3);
+        REQUIRE(int(Position(10).dist(18)) == 4);
+        REQUIRE(int(Position(10).dist(27)) == 4);
         REQUIRE(int(Position(15).dist(24)) == 9);
         REQUIRE(int(Position(11).dist(12)) == 8);
         REQUIRE(int(Position(42).dist(43)) == 7);
+        REQUIRE(int(Position(10).dist(82)) == 16);
         // room neighbour floor tile
         REQUIRE(int(Position(1).dist(40)) == 1);
         // enter room
@@ -48,13 +77,12 @@ TEST_CASE("Position class", "[position]") {
         // test if going through rooms works if multiple turns can be used
         REQUIRE(int(Position(7).dist(82, 2)) == 1);
         REQUIRE(int(Position(7).dist(19, 2)) == 1);
-        REQUIRE(int(Position(3).dist(10, 3)) == 8);
-
-        // test that the middle room is never used as a shortcut
-        REQUIRE(int(Position(36).dist(37, 2)) > 2);
+        REQUIRE(int(Position(3).dist(10, 3)) == 7);
     }
 
     SECTION("special middle room logic") {
+        // test that the middle room is never used as a shortcut
+        REQUIRE(int(Position(36).dist(37, 2)) > 2);
         // allows going out of the room
         REQUIRE(int(Position(0).dist(20)) == 1);
         // going into the room works as well

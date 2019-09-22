@@ -14,10 +14,17 @@ namespace AI {
             /**
              * \brief Contains a path of positions and the distance to travel the path
              */
-            struct Path {
-                std::vector<int> path;
-                int dist;
-                operator int();
+            class Path {
+                public:
+                    Path(int start_pos);
+                    void append(int pos);
+                    void append(Path other);
+                    std::vector<int> getPath();
+
+                    operator int() const;
+                    bool operator<(const Path& other);
+                private:
+                    std::vector<int> path;
             };
 
             /**
@@ -44,10 +51,11 @@ namespace AI {
              * \param turns the amount of turns that can be used to reach position
              * \returns a Path that contains the distance and the path that was followed
              */
-            NOT_IMPLEMENTED
             Path dist(const Position other, int turns=1);
 
         private:
+            void _dist(int start, int dest, std::vector<bool>& visited, std::vector<Path>& sps, int turns);
+
             const int position;
     };
 }
