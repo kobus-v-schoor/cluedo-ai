@@ -198,14 +198,22 @@ namespace AI {
             NOT_IMPLEMENTED
             Card getCard(std::vector<Card> cards);
 
-        private:
+        // using protected so that unit-tests class can change access specification
+        protected:
             /**
-             * \brief Used to mark various attributes for cards that can be used to calculate
-             * probabilities of the likelihood that the card is the one in the envelope
+             * \brief Used to mark various attributes for cards (the "notes" the player is making)
              */
-            struct Probability {
-                bool seen;
-                bool shown;
+            struct Notes {
+                /**
+                 * \brief Player has "seen" the card i.e. it was given the card or it was shown the
+                 * card by another player
+                 */
+                bool seen = false;
+
+                /**
+                 * \brief Player has shown the card to someone else
+                 */
+                bool shown = false;
             };
 
             /**
@@ -214,9 +222,9 @@ namespace AI {
             Player player;
 
             /**
-             * \brief Holds the probabilities for all the cards
+             * \brief Holds the notes for all the cards
              */
-            std::map<Player, std::map<Card, Probability>> marksheet;
+            std::map<Player, std::map<Card, Notes>> notes;
 
             /**
              * \brief Holds all the positions of all the players on the board
