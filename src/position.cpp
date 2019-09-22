@@ -19,18 +19,23 @@ void Position::Path::append(Path other)
     path.insert(path.end(), other.path.begin(), other.path.end());
 }
 
-std::vector<int> Position::Path::getPath()
+std::vector<int> Position::Path::getPath() const
 {
     return path;
 }
 
-Position::Path::operator int() const
+int Position::Path::dist() const
 {
-    int dist = 0;
+    int d = 0;
     for (size_t i = 1; i < path.size(); i++)
         if (!((path[i-1] < 10) && (path[i] < 10)))
-            dist++;
-    return dist;
+            d++;
+    return d;
+}
+
+Position::Path::operator int() const
+{
+    return dist();
 }
 
 bool Position::Path::operator<(const Path& other)
@@ -50,7 +55,7 @@ std::vector<int> Position::getNeighbours()
     return Board::board[this->position];
 }
 
-Position::Path Position::dist(const Position other, int turns)
+Position::Path Position::path(const Position other, int turns)
 {
     // same position
     if (other.position == position)

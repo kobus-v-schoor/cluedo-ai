@@ -13,16 +13,57 @@ namespace AI {
         public:
             /**
              * \brief Contains a path of positions and the distance to travel the path
+             *
+             * This class can be used to represent a path followed on the board and also to get the
+             * dice roll count required to complete the path
              */
             class Path {
                 public:
+                    /**
+                     * \param start_pos the position where the path should start
+                     */
                     Path(int start_pos);
-                    void append(int pos);
-                    void append(Path other);
-                    std::vector<int> getPath();
 
+                    /**
+                     * \brief Appends the position to the path (i.e. appends to the end of the path)
+                     * \param pos the position to append
+                     */
+                    void append(int pos);
+
+                    /**
+                     * \brief Appends another path to the end of the current path
+                     * \param other the other path
+                     */
+                    void append(Path other);
+
+                    /**
+                     * \brief Returns the path in the form of a vector
+                     * \returns the path
+                     */
+                    std::vector<int> getPath() const;
+
+                    /**
+                     * \brief Returns the distance (i.e. the dice roll count required) for the path
+                     * \returns the distance
+                     */
+                    int dist() const;
+
+                    /**
+                     * \brief Alias for dist()
+                     */
                     operator int() const;
+
+                    /**
+                     * \brief Can be used to compare the distance of two paths
+                     *
+                     * If one path is less than another, it means that the path is shorter than the
+                     * other path.
+                     *
+                     * \param other the other path
+                     * \returns true if the path is shorter than the other path
+                     */
                     bool operator<(const Path& other);
+
                 private:
                     std::vector<int> path;
             };
@@ -40,18 +81,16 @@ namespace AI {
             std::vector<int> getNeighbours();
 
             /**
-             * \brief Returns the distance from another position
+             * \brief Returns the shortest path to another position
              *
-             * This returns the distance from this board position to another position. This distance
-             * represents the count for the dice roll needed to reach the other position. The
-             * distance between two positions are the same regardless of the starting point. A turns
-             * parameter can also be passed to check the distance if more than 1 turn can be used.
+             * This returns the shortest path from this board position to another position. By
+             * making turns more than one, shortcuts through rooms can also be used
              *
              * \param other the other Position
              * \param turns the amount of turns that can be used to reach position
-             * \returns a Path that contains the distance and the path that was followed
+             * \returns a Path class that contains the distance and the path that was followed
              */
-            Path dist(const Position other, int turns=1);
+            Path path(const Position other, int turns=1);
 
         private:
             void _dist(int start, int dest, std::vector<bool>& visited, std::vector<Path>& sps, int turns);
