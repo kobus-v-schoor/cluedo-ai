@@ -8,6 +8,7 @@
 #include "position.h"
 #include <vector>
 #include <utility>
+#include <map>
 
 namespace AI {
     /**
@@ -77,6 +78,9 @@ namespace AI {
                  */
                 const int card;
                 const Type type;
+
+                bool operator<(const Card& other) const;
+                bool operator==(const Card& other) const;
             };
 
             /**
@@ -99,7 +103,6 @@ namespace AI {
              * \brief Bot class constructor
              * \param player The board character the AI will be playing as
              */
-            NOT_IMPLEMENTED
             Bot(Player player);
 
             /**
@@ -109,7 +112,6 @@ namespace AI {
              * cards.  This can also be used when the AI takes over from a human player to inform
              * the AI player of all the cards the human player has been shown during the game,
              */
-            NOT_IMPLEMENTED
             void setCards(std::vector<Card> cards);
 
             /**
@@ -118,7 +120,6 @@ namespace AI {
              * This should be used when the AI gets initialized either at the beginning of the game
              * or when an AI player replaces a human player
              */
-            NOT_IMPLEMENTED
             void updateBoard(std::vector<std::pair<Player, Position>> players);
 
             /**
@@ -126,7 +127,6 @@ namespace AI {
              *
              * This will update the internal board state to match the player's new position
              */
-            NOT_IMPLEMENTED
             void movePlayer(Player player, Position position);
 
             /**
@@ -174,6 +174,21 @@ namespace AI {
             Suggestion getSuggestion();
 
             /**
+             * \brief Used to show the player a card if another player was able to show a card when
+             * the bot made a suggestion
+             * \param player the player that showed the card
+             * \param card the card that was shown
+             */
+            void showCard(Player player, Card card);
+
+            /**
+             * \brief Used to tell the bot that no player was able to show a card after a suggestion
+             * has been made
+             */
+            NOT_IMPLEMENTED
+            void noShowCard();
+
+            /**
              * \brief Used to request a card to show to another player that made a suggestion
              *
              * \param cards The cards that the AI has to choose from as specified by the server
@@ -182,6 +197,31 @@ namespace AI {
              */
             NOT_IMPLEMENTED
             Card getCard(std::vector<Card> cards);
+
+        private:
+            /**
+             * \brief Used to mark various attributes for cards that can be used to calculate
+             * probabilities of the likelihood that the card is the one in the envelope
+             */
+            struct Probability {
+                bool seen;
+                bool shown;
+            };
+
+            /**
+             * \brief The player this bot is playing as
+             */
+            Player player;
+
+            /**
+             * \brief Holds the probabilities for all the cards
+             */
+            std::map<Player, std::map<Card, Probability>> marksheet;
+
+            /**
+             * \brief Holds all the positions of all the players on the board
+             */
+            std::map<Player, int> board;
     };
 }
 

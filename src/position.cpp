@@ -108,6 +108,11 @@ Position::Path Position::path(const Position other, std::vector<bool> occupied)
     return path(other, occupied, 1);
 }
 
+Position::operator int() const
+{
+    return position;
+}
+
 void Position::shortestPath(SPInfo& info, int turns)
 {
     info.visited[position] = true;

@@ -130,6 +130,12 @@ namespace AI {
              */
             Path path(const Position other, std::vector<bool> occupied);
 
+            /**
+             * \brief Allows casting the position to an int where the int is the position on the
+             * board
+             */
+            operator int() const;
+
         private:
             /**
              * \brief Used to passed along info from one recursion to the next of the shortestPath()
