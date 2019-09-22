@@ -1,3 +1,8 @@
+/**
+ * \file board.cpp
+ * \author Kobus van Schoor
+ */
+
 #include "../include/board.h"
 
 using namespace AI::Board;

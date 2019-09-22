@@ -1,3 +1,8 @@
+/**
+ * \file bot.h
+ * \author Kobus van Schoor
+ */
+
 #pragma once
 #include "macros.h"
 #include "position.h"
@@ -12,8 +17,6 @@ namespace AI {
      * class is stateful, meaning that the instance that you create of this class should be used for
      * the entirety of the game as the AI will store and learn from data passed to it as the game
      * progresses (will not just use the current state of the board).
-     *
-     * \author Kobus van Schoor
      */
     class Bot {
         public:

@@ -1,3 +1,8 @@
+/**
+ * \file position.cpp
+ * \author Kobus van Schoor
+ */
+
 #include "../include/position.h"
 #include "../include/board.h"
 #include <stdexcept>

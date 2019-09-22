@@ -1,3 +1,8 @@
+/**
+ * \file bot.cpp
+ * \author Kobus van Schoor
+ */
+
 #include "../include/bot.h"
 
 using namespace AI;

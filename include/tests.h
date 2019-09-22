@@ -1,3 +1,8 @@
+/**
+ * \file tests.h
+ * \author Kobus van Schoor
+ */
+
 #pragma once
 
 template <typename T>

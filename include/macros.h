@@ -1,3 +1,8 @@
+/**
+ * \file macros.h
+ * \author Kobus van Schoor
+ */
+
 #pragma once
 
 /**

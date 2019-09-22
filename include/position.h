@@ -1,3 +1,8 @@
+/**
+ * \file position.h
+ * \author Kobus van Schoor
+ */
+
 #pragma once
 #include "macros.h"
 #include <vector>
@@ -97,7 +102,7 @@ namespace AI {
              * making turns more than one, shortcuts through rooms can also be used
              *
              * \param other the other Position
-             * \param positions on the board occupied by other players
+             * \param occupied positions on the board occupied by other players
              * \param turns the amount of turns that can be used to reach position
              * \returns a Path class that contains the distance and the path that was followed
              * \throw std::invalid_argument if occupied isn't the correct size or if turns is less

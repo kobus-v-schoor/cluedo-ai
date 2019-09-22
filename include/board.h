@@ -1,3 +1,8 @@
+/**
+ * \file board.h
+ * \author Kobus van Schoor
+ */
+
 #pragma once
 #include <vector>
 
