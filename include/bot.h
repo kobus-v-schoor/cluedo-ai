@@ -130,6 +130,7 @@ namespace AI {
              * \brief Used to inform AI that another player has made a suggestion.
              *
              * \param player The player who made the suggestion
+             * \param suggestion The suggestion the player made
              */
             NOT_IMPLEMENTED
             void madeSuggestion(Player player, Suggestion suggestion);

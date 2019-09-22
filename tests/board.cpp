@@ -11,7 +11,7 @@ bool contains(std::vector<int> vec, int v) {
 
 TEST_CASE("board namespace", "[board]") {
     // check that board was actually initialized
-    REQUIRE(board.size() == 83);
+    REQUIRE(board.size() == BOARD_SIZE);
 
     // basic
     REQUIRE_THAT(board[10], VectorContains(11));

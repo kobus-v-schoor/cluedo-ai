@@ -93,7 +93,22 @@ namespace AI {
             Path path(const Position other, int turns=1);
 
         private:
-            void _dist(int start, int dest, std::vector<bool>& visited, std::vector<Path>& sps, int turns);
+            /**
+             * \brief Used to passed along info from one recursion to the next of the shortestPath()
+             * fuction
+             */
+            struct SPInfo {
+                int start;
+                int dest;
+                std::vector<bool> visited;
+                /**
+                 * \brief Will be updated during execution to always have to shortest path to a node
+                 * from the starting point
+                 */
+                std::vector<Path> spMap;
+            };
+
+            void shortestPath(SPInfo& info, int turns);
 
             const int position;
     };

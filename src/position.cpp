@@ -46,8 +46,9 @@ bool Position::Path::operator<(const Path& other)
 Position::Position(int pos) :
     position(pos)
 {
-    if ((pos < 0) || (pos > 82))
-        throw std::invalid_argument("pos must be between 0 and 82, inclusive");
+    if ((pos < 0) || (pos >= Board::BOARD_SIZE))
+        throw std::invalid_argument("pos must be between 0 and " +
+                std::to_string(Board::BOARD_SIZE-1) + ", inclusive");
 }
 
 std::vector<int> Position::getNeighbours()
@@ -61,30 +62,38 @@ Position::Path Position::path(const Position other, int turns)
     if (other.position == position)
         return Path(position);
 
-    std::vector<bool> visited(Board::board.size(), false);
-    std::vector<Path> sps(Board::board.size(), position);
+    SPInfo info;
 
-    _dist(position, other.position, visited, sps, turns);
-    return sps[other.position];
+    info.start = position;
+    info.dest = other.position;
+    info.visited = std::vector<bool>(Board::BOARD_SIZE, false);
+    info.spMap = std::vector<Path>(Board::BOARD_SIZE, position);
+
+    shortestPath(info, turns);
+    return info.spMap[info.dest];
 }
 
-void Position::_dist(int start, int dest, std::vector<bool>& visited, std::vector<Path>& sps, int turns)
+void Position::shortestPath(SPInfo& info, int turns)
 {
-    visited[position] = true;
+    info.visited[position] = true;
 
     for (auto ngh : getNeighbours()) {
-        Path p(sps[position]);
+        // create path from this node to neigbour
+        Path p(info.spMap[position]);
         p.append(ngh);
-        if (((sps[ngh] == 0) || (p < sps[ngh])) && (ngh != start)) {
-            visited[ngh] = false;
-            sps[ngh] = p;
+
+        // check if newly created path is shorter than the current one
+        if (((info.spMap[ngh] == 0) || (p < info.spMap[ngh])) && (ngh != info.start)) {
+            info.visited[ngh] = false;
+            info.spMap[ngh] = p;
         }
 
-        if (ngh == dest)
+        // destination found, return
+        if (ngh == info.dest)
             return;
 
         // skip visited
-        if (visited[ngh])
+        if (info.visited[ngh])
             continue;
 
         // middle room
@@ -92,10 +101,10 @@ void Position::_dist(int start, int dest, std::vector<bool>& visited, std::vecto
             continue;
 
         // room and only one turn
-        if ((ngh < 10) && (turns <= 1))
+        if ((ngh < Board::ROOM_COUNT) && (turns <= 1))
             continue;
 
-        Position(ngh)._dist(start, dest, visited, sps, ngh < 10 ? turns - 1 : turns);
+        Position(ngh).shortestPath(info, ngh < Board::ROOM_COUNT ? turns - 1 : turns);
     }
 }
 

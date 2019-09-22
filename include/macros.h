@@ -7,7 +7,7 @@
  * should not be considered to be in a working state. If the function is used, a message will be
  * generated at compile-time warning the user that the function is not implemented.
  *
- * This is intended to be only used during development
+ * \note This is intended to be only used during active development
  *
  * \note This only uses the deprecated attribute because it is portable between clang and g++, the
  * function is not actually deprected, it is just not implemented yet.
@@ -28,6 +28,10 @@
 #define BREAK std::raise(SIGINT);
 
 #include <iostream>
+
+/**
+ * \brief This is the prefix that is added to all log messages
+ */
 #define LOG_FORMAT __FILE__ << "(" << __LINE__ << "): "
 
 /**
@@ -35,20 +39,20 @@
  *
  * All these log messages will be printed to stderr
  */
-#define ERR_LOG(msg) std::cerr << LOG_FORMAT << msg << std::endl
+#define LOG_ERR(msg) std::cerr << LOG_FORMAT << msg << std::endl
 
 
-#ifndef AI_NO_LOGIC_LOG
+#ifndef AI_NO_LOG_LOGIC
     /**
      * \brief Used to log messages about logic decisions being made
      *
-     * These messages can be disabled by defining AI_NO_LOGIC_LOG
+     * These messages can be disabled by defining AI_NO_LOG_LOGIC
      */
-    #define LOGIC_LOG(msg) std::cout << LOG_FORMAT << msg << std::endl
+    #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
 #endif
 
 /**
- * \def INFO_LOG
+ * \def LOG_INFO
  * \brief Can be used to log informational messages
  *
  * The macro will automatically be disabled when compiling with AI_RELEASE being defined (e.g. using
@@ -57,9 +61,9 @@
 
 #ifdef AI_RELEASE
     // the do while gets optimized as a noop
-    #define INFO_LOG(msg) do {} while(0)
+    #define LOG_INFO(msg) do {} while(0)
 #else
-    #define INFO_LOG(msg) std::cout << LOG_FORMAT << msg << std::endl
+    #define LOG_INFO(msg) std::cout << LOG_FORMAT << msg << std::endl
 #endif
 
 // vim: set expandtab textwidth=100:
