@@ -45,7 +45,7 @@ Bot::Bot(const Player player) :
 void Bot::setCards(const std::vector<Card> cards)
 {
     for (auto c : cards)
-        notes[player][c].seen = true;
+        notes[player][c].dealt = true;
 }
 
 void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
@@ -71,6 +71,7 @@ Bot::Suggestion Bot::getSuggestion(){ return Suggestion(Player(0),Weapon(0),Room
 void Bot::showCard(Player player, Card card)
 {
     notes[this->player][card].seen = true;
+    notes[player][card].dealt = true;
     notes[player][card].shown = true;
 }
 

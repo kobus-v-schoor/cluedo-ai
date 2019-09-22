@@ -205,8 +205,13 @@ namespace AI {
              */
             struct Notes {
                 /**
-                 * \brief Player has "seen" the card i.e. it was given the card or it was shown the
-                 * card by another player
+                 * \brief Player was dealt the card during game init
+                 */
+                bool dealt = false;
+
+                /**
+                 * \brief Player has "seen" the card i.e. the player has seen the card because
+                 * another player showed it to them
                  */
                 bool seen = false;
 

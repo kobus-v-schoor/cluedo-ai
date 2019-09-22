@@ -58,6 +58,7 @@ TEST_CASE("Bot class", "[bot]") {
     SECTION("private") {
         SECTION("Notes struct") {
             BotTest::Notes notes;
+            REQUIRE_FALSE(notes.dealt);
             REQUIRE_FALSE(notes.shown);
             REQUIRE_FALSE(notes.seen);
         }
@@ -70,12 +71,12 @@ TEST_CASE("Bot class", "[bot]") {
         SECTION("show and set cards") {
             Bot::Card sc(randEnum(Bot::Weapon::SPANNER));
             bot.setCards({ sc });
-            REQUIRE(bot.notes[player][sc].seen);
-            REQUIRE_FALSE(bot.notes[player][sc].shown);
+            REQUIRE(bot.notes[player][sc].dealt);
 
             Bot::Player other = randEnum(Bot::Player::WHITE);
             bot.showCard(other, sc);
             REQUIRE(bot.notes[player][sc].seen);
+            REQUIRE(bot.notes[other][sc].dealt);
             REQUIRE(bot.notes[other][sc].shown);
         }
     }
