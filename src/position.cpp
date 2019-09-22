@@ -1,7 +1,6 @@
 #include "../include/position.h"
 #include "../include/board.h"
 #include <stdexcept>
-#include <algorithm>
 
 using namespace AI;
 
