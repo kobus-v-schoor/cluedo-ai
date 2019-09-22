@@ -9,6 +9,11 @@ Position::Path::Path(int start_pos)
     path.push_back(start_pos);
 }
 
+bool Position::Path::empty()
+{
+    return path.size() == 1;
+}
+
 void Position::Path::append(int pos)
 {
     path.push_back(pos);
@@ -56,8 +61,13 @@ std::vector<int> Position::getNeighbours()
     return Board::board[this->position];
 }
 
-Position::Path Position::path(const Position other, int turns)
+Position::Path Position::path(const Position other, std::vector<bool> occupied, int turns)
 {
+    if (occupied.size() != Board::BOARD_SIZE)
+        throw std::invalid_argument("occupied vector must be the size of the board");
+    if (turns < 1)
+        throw std::invalid_argument("turns must be at least 1");
+
     // same position
     if (other.position == position)
         return Path(position);
@@ -66,11 +76,31 @@ Position::Path Position::path(const Position other, int turns)
 
     info.start = position;
     info.dest = other.position;
+    info.occupied = occupied;
     info.visited = std::vector<bool>(Board::BOARD_SIZE, false);
     info.spMap = std::vector<Path>(Board::BOARD_SIZE, position);
 
     shortestPath(info, turns);
+
+    if (info.spMap[info.dest].empty())
+        throw std::runtime_error("unable to find valid path from " + std::to_string(position) +
+                " to " + std::to_string(other.position));
     return info.spMap[info.dest];
+}
+
+Position::Path Position::path(const Position other)
+{
+    return path(other, std::vector<bool>(Board::BOARD_SIZE, false), 1);
+}
+
+Position::Path Position::path(const Position other, int turns)
+{
+    return path(other, std::vector<bool>(Board::BOARD_SIZE, false), turns);
+}
+
+Position::Path Position::path(const Position other, std::vector<bool> occupied)
+{
+    return path(other, occupied, 1);
 }
 
 void Position::shortestPath(SPInfo& info, int turns)
@@ -83,10 +113,14 @@ void Position::shortestPath(SPInfo& info, int turns)
         p.append(ngh);
 
         // check if newly created path is shorter than the current one
-        if (((info.spMap[ngh] == 0) || (p < info.spMap[ngh])) && (ngh != info.start)) {
+        if (((info.spMap[ngh].empty()) || (p < info.spMap[ngh])) && (ngh != info.start)) {
             info.visited[ngh] = false;
             info.spMap[ngh] = p;
         }
+
+        // skip occupied tile
+        if (info.occupied[ngh])
+            continue;
 
         // destination found, return
         if (ngh == info.dest)

@@ -25,6 +25,16 @@ namespace AI {
                     Path(int start_pos);
 
                     /**
+                     * \brief Returns true if path is empty
+                     *
+                     * A path is considered empty if the only element in the path is the starting
+                     * point
+                     *
+                     * \returns true if the path is empty
+                     */
+                    bool empty();
+
+                    /**
                      * \brief Appends the position to the path (i.e. appends to the end of the path)
                      * \param pos the position to append
                      */
@@ -87,10 +97,33 @@ namespace AI {
              * making turns more than one, shortcuts through rooms can also be used
              *
              * \param other the other Position
+             * \param positions on the board occupied by other players
              * \param turns the amount of turns that can be used to reach position
              * \returns a Path class that contains the distance and the path that was followed
+             * \throw std::invalid_argument if occupied isn't the correct size or if turns is less
+             * than 1
+             * \throw std::runtime_error if no path can be found to destination - this should only
+             * happen when a tile is blocked because all the neighbours to the tile is occupied
              */
-            Path path(const Position other, int turns=1);
+            Path path(const Position other, std::vector<bool> occupied, int turns);
+
+            /**
+             * \brief Overload for path() with occupied all false and turns = 1
+             * \note This class is intended to ease unit testing.
+             */
+            Path path(const Position other);
+
+            /**
+             * \brief Overload for path() with occupied all false
+             * \note This class is intended to ease unit testing.
+             */
+            Path path(const Position other, int turns);
+
+            /**
+             * \brief Overload for path() with turns = 1
+             * \note This class is intended to ease unit testing.
+             */
+            Path path(const Position other, std::vector<bool> occupied);
 
         private:
             /**
@@ -100,6 +133,7 @@ namespace AI {
             struct SPInfo {
                 int start;
                 int dest;
+                std::vector<bool> occupied;
                 std::vector<bool> visited;
                 /**
                  * \brief Will be updated during execution to always have to shortest path to a node

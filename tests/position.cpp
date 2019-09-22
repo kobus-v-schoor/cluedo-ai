@@ -30,11 +30,14 @@ TEST_CASE("Path struct", "[path]") {
     REQUIRE(int(p) == 3);
 }
 
-void validatePath(Position::Path path)
+void validatePath(Position::Path path, std::vector<bool> occupied = std::vector<bool>())
 {
     auto p = path.getPath();
-    for (size_t i = 0; i < p.size() - 1; i++)
+    for (size_t i = 0; i < p.size() - 1; i++) {
         REQUIRE_THAT(Board::board[p[i]], VectorContains(p[i+1]));
+        if (!occupied.empty())
+            REQUIRE_FALSE(occupied[p[i+1]]);
+    }
 }
 
 TEST_CASE("Position class", "[position]") {
@@ -51,7 +54,18 @@ TEST_CASE("Position class", "[position]") {
         REQUIRE_THAT(Position(50).getNeighbours(), Equals(Board::board[50]));
     }
 
-    SECTION("basic distance logic") {
+    SECTION("path logic") {
+        SECTION("argument checks") {
+            REQUIRE_NOTHROW(Position(10).path(11, std::vector<bool>(Board::BOARD_SIZE)));
+            REQUIRE_NOTHROW(Position(10).path(11, 1));
+            REQUIRE_NOTHROW(Position(10).path(11, 2));
+
+            REQUIRE_THROWS_AS(Position(10).path(11, std::vector<bool>()), std::invalid_argument&);
+            REQUIRE_THROWS_AS(Position(10).path(11, std::vector<bool>(10)), std::invalid_argument&);
+            REQUIRE_THROWS_AS(Position(10).path(11, 0), std::invalid_argument&);
+            REQUIRE_THROWS_AS(Position(10).path(11, -1), std::invalid_argument&);
+        }
+
         SECTION("nearby or trivial paths") {
             REQUIRE(Position(0).path(0) == 0);
             REQUIRE(int(Position(10).path(11)) == 1);
@@ -62,7 +76,7 @@ TEST_CASE("Position class", "[position]") {
             REQUIRE(int(Position(15).path(24)) == 9);
         }
 
-        SECTION("corner logic") {
+        SECTION("corners") {
             REQUIRE(int(Position(11).path(12)) == 8);
             REQUIRE(int(Position(42).path(43)) == 7);
             REQUIRE(int(Position(26).path(30)) == 9);
@@ -102,22 +116,35 @@ TEST_CASE("Position class", "[position]") {
             validatePath(Position(82).path(10));
             validatePath(Position(10).path(82, 3));
         }
-    }
 
-    // test if going through rooms works if multiple turns can be used
-    SECTION("multiple turns logic") {
-        REQUIRE(int(Position(7).path(82, 2)) == 1);
-        REQUIRE(int(Position(7).path(19, 2)) == 1);
-        REQUIRE(int(Position(3).path(10, 3)) == 7);
-    }
+        // test if going through rooms works if multiple turns can be used
+        SECTION("multiple turns") {
+            REQUIRE(int(Position(7).path(82, 2)) == 1);
+            REQUIRE(int(Position(7).path(19, 2)) == 1);
+            REQUIRE(int(Position(3).path(10, 3)) == 7);
+        }
 
-    SECTION("special middle room logic") {
-        // never use as shortcut (even with multiple turns)
-        REQUIRE(int(Position(36).path(37, 2)) > 2);
-        // exit room
-        REQUIRE(int(Position(0).path(20)) == 1);
-        // enter room
-        REQUIRE(int(Position(20).path(0)) == 1);
+        SECTION("middle room") {
+            // never use as shortcut (even with multiple turns)
+            REQUIRE(int(Position(36).path(37, 2)) > 2);
+            // exit room
+            REQUIRE(int(Position(0).path(20)) == 1);
+            // enter room
+            REQUIRE(int(Position(20).path(0)) == 1);
+        }
+
+        SECTION("occupied tiles") {
+            std::vector<bool> occupied(Board::BOARD_SIZE, false);
+
+            occupied[26] = true;
+            // go around occupied tile
+            REQUIRE(int(Position(25).path(27, occupied)) == 4);
+            validatePath(Position(25).path(27, occupied), occupied);
+
+            occupied[33] = true;
+            occupied[44] = true;
+            REQUIRE_THROWS_AS(Position(43).path(34, occupied), std::runtime_error&);
+        }
     }
 }
 
