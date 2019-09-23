@@ -121,3 +121,9 @@ tar:
 
 doc:
 	doxygen doxyfile
+
+coverage:
+	export gf="-std=c++11 -g -Wall --coverage -fprofile-arcs -ftest-coverage"; \
+	export go="g++ -c $$gf"; \
+	$(MAKE) clean; \
+	$(MAKE) test
