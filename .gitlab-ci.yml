@@ -18,8 +18,9 @@ ai-test:
 
 ai-coverage:
     stage: deploy
+    image: ubuntu:18.04
     before_script:
-        - apt update && apt -y install make autoconf catch lcov
+        - apt update && apt -y install make autoconf catch lcov gcc g++
     script:
         - cd ai
         - ls
