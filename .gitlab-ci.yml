@@ -26,6 +26,6 @@ ai-coverage:
         - ./test
         - gcov -r src/*.cpp
         - cd src
-        - lcov --coverage --directory . --output-file coverage.info
+        - lcov --directory . --capture --output-file coverage.info
         - lcov --remove coverage.info -o coverage.info '/usr/include/*'
         - lcov --list coverage.info
