@@ -122,6 +122,7 @@ tar:
 doc:
 	doxygen doxyfile
 
+.PHONY: coverage
 coverage:
 	export gf="-std=c++11 -g -Wall --coverage -fprofile-arcs -ftest-coverage"; \
 	export go="g++ -c $$gf"; \
@@ -134,4 +135,6 @@ coverage:
 	lcov --list coverage.info; \
 	echo coverage > last_build; \
 	find . -name '*.gcda' -delete -or -name '*.gcno' -delete; \
+	[[ -d coverage ]] && rm -rf coverage; \
+	genhtml coverage.info --output-directory coverage; \
 	rm coverage.info

@@ -38,7 +38,7 @@ int Position::Path::dist() const
 {
     int d = 0;
     for (size_t i = 1; i < path.size(); i++)
-        if (!((path[i-1] < 10) && (path[i] < 10)))
+        if (!((path[i-1] < Board::ROOM_COUNT) && (path[i] < Board::ROOM_COUNT)))
             d++;
     return d;
 }

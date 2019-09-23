@@ -3,13 +3,24 @@ image: gcc
 ai-build:
     stage: build
     before_script:
-        - apt update && apt -y install make autoconf catch
+        - apt update && apt -y install make catch
     script:
         - cd ai
         - make release
     artifacts:
         paths:
             - ai/test
+
+ai-build-doc:
+    stage: build
+    before_script:
+        - apt update && apt -y install make doxygen graphviz
+    script:
+        - cd ai
+        - make doc
+    artifacts:
+        paths:
+            - ai/docs
 
 ai-test:
     stage: test
@@ -24,3 +35,6 @@ ai-coverage:
     script:
         - cd ai
         - make coverage
+    artifacts:
+        paths:
+            - ai/coverage

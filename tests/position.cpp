@@ -52,6 +52,8 @@ TEST_CASE("Position class", "[position]") {
         REQUIRE_THAT(Position(0).getNeighbours(), Equals(Board::board[0]));
         REQUIRE_THAT(Position(20).getNeighbours(), Equals(Board::board[20]));
         REQUIRE_THAT(Position(50).getNeighbours(), Equals(Board::board[50]));
+
+        REQUIRE(int(Position(10)) == 10);
     }
 
     SECTION("path logic") {
