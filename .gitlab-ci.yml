@@ -23,14 +23,9 @@ ai-coverage:
         - apt update && apt -y install make autoconf catch lcov gcc g++
     script:
         - cd ai
-        - ls
         - make coverage
-        - ls
         - ./test
         - gcov -r src/*.cpp
-        - ls
-        - ls src/
         - lcov --directory src/ --capture --output-file coverage.info
-        - ls
         - lcov --remove coverage.info -o coverage.info '/usr/include/*'
         - lcov --list coverage.info

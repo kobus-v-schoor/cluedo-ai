@@ -1,3 +1,6 @@
+[![pipeline status](https://repo.ee.up.ac.za/2019_epe321/group_1/badges/ai/pipeline.svg)](https://repo.ee.up.ac.za/2019_epe321/group_1/commits/ai)
+[![coverage report](https://repo.ee.up.ac.za/2019_epe321/group_1/badges/ai/coverage.svg)](https://repo.ee.up.ac.za/2019_epe321/group_1/commits/ai)
+
 # AI
 
 ## Building and running the unit tests
