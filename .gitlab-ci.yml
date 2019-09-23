@@ -9,12 +9,12 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script:
-    - apt update && apt -y install make autoconf
+    - apt update && apt -y install make autoconf catch
   script:
-    - make
+    - cd ai && make
   artifacts:
     paths:
-      - test
+      - ai/test
       # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
       # cache:
       #   paths:
@@ -24,4 +24,4 @@ build:
 test:
   stage: test
   script:
-    - ./test
+    - ai/test
