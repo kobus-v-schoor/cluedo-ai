@@ -11,8 +11,8 @@ using namespace AI;
  */
 class BotTest : public Bot {
     public:
-        BotTest(Player p) :
-            Bot::Bot(p)
+        BotTest(Player p, std::vector<Player> o) :
+            Bot::Bot(p, o)
         {}
 
         using Bot::Notes;
@@ -64,7 +64,8 @@ TEST_CASE("Bot class", "[bot]") {
         }
 
         Bot::Player player = randEnum(Bot::Player::WHITE);
-        BotTest bot(player);
+        BotTest bot(player, { Bot::Player::SCARLET, Bot::Player::PLUM, Bot::Player::PEACOCK ,
+                Bot::Player::GREEN });
 
         REQUIRE(bot.player == player);
 

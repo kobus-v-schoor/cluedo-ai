@@ -102,8 +102,10 @@ namespace AI {
             /**
              * \brief Bot class constructor
              * \param player The board character the AI will be playing as
+             * \param order The order in which players will play, with the first element being the
+             * first player.
              */
-            Bot(Player player);
+            Bot(Player player, std::vector<Player> order);
 
             /**
              * \brief Set the cards dealt to the player
@@ -134,9 +136,10 @@ namespace AI {
              *
              * \param player The player who made the suggestion
              * \param suggestion The suggestion the player made
+             * \param accuse Set to true if the suggestion was a wrong accusation
              */
             NOT_IMPLEMENTED
-            void madeSuggestion(Player player, Suggestion suggestion);
+            void madeSuggestion(Player player, Suggestion suggestion, bool accuse = false);
 
             /**
              * \brief Used to notify AI that a player was shown a card by another player
@@ -225,6 +228,11 @@ namespace AI {
              * \brief The player this bot is playing as
              */
             Player player;
+
+            /**
+             * \brief The order in which the players get to play
+             */
+            std::vector<Player> order;
 
             /**
              * \brief Holds the notes for all the cards

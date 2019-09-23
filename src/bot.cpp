@@ -38,8 +38,9 @@ Bot::Suggestion::Suggestion(Player p, Weapon w, Room r):
     room(r)
 {}
 
-Bot::Bot(const Player player) :
-    player(player)
+Bot::Bot(const Player player, std::vector<Player> order) :
+    player(player),
+    order(order)
 {}
 
 void Bot::setCards(const std::vector<Card> cards)
@@ -60,7 +61,7 @@ void Bot::movePlayer(const Player player, Position position)
     board[player] = position;
 }
 
-void Bot::madeSuggestion(Player player, Suggestion suggestion){}
+void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse){}
 
 void Bot::shownCard(Player asked, Player showed){}
 
