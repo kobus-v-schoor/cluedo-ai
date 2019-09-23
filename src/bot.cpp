@@ -43,6 +43,18 @@ bool Bot::Suggestion::operator==(const Suggestion& other)
     return (player == other.player) && (weapon == other.weapon) && (room == other.room);
 }
 
+bool Bot::Notes::concluded()
+{
+    return dealt || seen || shown || lacks || deduced;
+}
+
+bool Bot::Notes::conclusion()
+{
+    if ((dealt || seen || shown || deduced) != !lacks)
+        throw std::logic_error("conflicting deductions has been set for note");
+    return !lacks;
+}
+
 void Bot::SuggestionLog::addSuggestion(Player from, Suggestion sug)
 {
     if (waiting())

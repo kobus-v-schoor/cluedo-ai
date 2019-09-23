@@ -64,6 +64,13 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE_FALSE(notes.shown);
             REQUIRE_FALSE(notes.seen);
             REQUIRE_FALSE(notes.lacks);
+
+            notes.dealt = true;
+            REQUIRE(notes.concluded());
+            REQUIRE(notes.conclusion());
+
+            notes.lacks = true;
+            REQUIRE_THROWS_AS(notes.conclusion(), std::logic_error&);
         }
 
         Bot::Player player = randEnum(Bot::Player::WHITE);

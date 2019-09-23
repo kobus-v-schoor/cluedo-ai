@@ -237,9 +237,27 @@ namespace AI {
                  */
                 bool shown = false;
 
-                /** \brief Player does not have the card
+                /**
+                 * \brief Player does not have the card
                  */
                 bool lacks = false;
+
+                /**
+                 * \brief Deduced that the player has the card
+                 */
+                bool deduced = false;
+
+                /**
+                 * \returns true if a conclusion can be made about a player and a card
+                 */
+                bool concluded();
+
+                /**
+                 * \returns true if a player has or has seen a card
+                 * \note first check that a conclusion has been drawn by calling concluded()
+                 * \throw std::logic_error if conflicting attributes has been set
+                 */
+                bool conclusion();
             };
 
             /**
