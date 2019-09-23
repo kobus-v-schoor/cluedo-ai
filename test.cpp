@@ -7,6 +7,9 @@
 #include "include/position.h"
 #include "include/board.h"
 
+//// deductors
+#include "include/deductors/local-exclude.h"
+
 int main(int argc, char* argv[]) {
     // pre-test setup
     srand(time(NULL));

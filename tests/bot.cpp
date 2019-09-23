@@ -54,25 +54,65 @@ TEST_CASE("Card class", "[card]") {
 }
 
 TEST_CASE("Bot class", "[bot]") {
+    SECTION("Notes struct") {
+        BotTest::Notes notes;
+        REQUIRE_FALSE(notes.dealt);
+        REQUIRE_FALSE(notes.shown);
+        REQUIRE_FALSE(notes.seen);
+        REQUIRE_FALSE(notes.lacks);
+
+        notes.dealt = true;
+        REQUIRE(notes.concluded());
+        REQUIRE(notes.conclusion());
+
+        notes.lacks = true;
+        REQUIRE_THROWS_AS(notes.conclusion(), std::logic_error&);
+    }
+
+    SECTION("SuggestionLog class") {
+        Bot::Player from = randEnum(Bot::Player::WHITE);
+        Bot::Player show = randEnum(Bot::Player::WHITE);
+        Bot::Suggestion sug(randEnum(Bot::Player::WHITE), randEnum(Bot::Weapon::SPANNER),
+                randEnum(Bot::Room::GAMES_ROOM));
+
+        BotTest::SuggestionLog log;
+
+        // test adding a suggestion
+        REQUIRE_NOTHROW(log.addSuggestion(from, sug));
+        REQUIRE_NOTHROW(log.addShow(show));
+        REQUIRE(log.log().size() == 1);
+
+        // testing adding a second, no show suggestion
+        REQUIRE_NOTHROW(log.addSuggestion(from, sug));
+        REQUIRE_NOTHROW(log.addNoShow());
+        REQUIRE(log.log().size() == 2);
+
+        BotTest::SuggestionLogItem item = log.log()[0];
+
+        // testing if suggestion was correctly added
+        REQUIRE(item.suggestion == sug);
+        REQUIRE(item.from == from);
+        REQUIRE(item.show == show);
+        REQUIRE(item.showed);
+
+        // testing that second suggestion was correctly added
+        REQUIRE_FALSE(log.log()[1].showed);
+
+        // testing exceptions
+        REQUIRE_THROWS_AS(log.addShow(show), std::runtime_error&);
+        REQUIRE_NOTHROW(log.addSuggestion(from, sug));
+        REQUIRE_THROWS_AS(log.addSuggestion(from, sug), std::runtime_error&);
+
+        // testing clearing
+        REQUIRE(log.waiting());
+        log.clear();
+        REQUIRE_FALSE(log.waiting());
+    }
+
     // this is the only section that should use the BotTest class - this section will test private
     // functionality.
     // This section should only test the bare minimum to minimize testing of private members
     SECTION("private") {
-        SECTION("Notes struct") {
-            BotTest::Notes notes;
-            REQUIRE_FALSE(notes.dealt);
-            REQUIRE_FALSE(notes.shown);
-            REQUIRE_FALSE(notes.seen);
-            REQUIRE_FALSE(notes.lacks);
-
-            notes.dealt = true;
-            REQUIRE(notes.concluded());
-            REQUIRE(notes.conclusion());
-
-            notes.lacks = true;
-            REQUIRE_THROWS_AS(notes.conclusion(), std::logic_error&);
-        }
-
         Bot::Player player = randEnum(Bot::Player::WHITE);
         BotTest bot(player, { Bot::Player::SCARLET, Bot::Player::PLUM, Bot::Player::PEACOCK ,
                 Bot::Player::GREEN });
@@ -89,46 +129,6 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE(bot.notes[player][sc].seen);
             REQUIRE(bot.notes[other][sc].dealt);
             REQUIRE(bot.notes[other][sc].shown);
-        }
-
-        SECTION("SuggestionLog class") {
-            Bot::Player from = randEnum(Bot::Player::WHITE);
-            Bot::Player show = randEnum(Bot::Player::WHITE);
-            Bot::Suggestion sug(randEnum(Bot::Player::WHITE), randEnum(Bot::Weapon::SPANNER),
-                    randEnum(Bot::Room::GAMES_ROOM));
-
-            BotTest::SuggestionLog log;
-
-            // test adding a suggestion
-            REQUIRE_NOTHROW(log.addSuggestion(from, sug));
-            REQUIRE_NOTHROW(log.addShow(show));
-            REQUIRE(log.log().size() == 1);
-
-            // testing adding a second, no show suggestion
-            REQUIRE_NOTHROW(log.addSuggestion(from, sug));
-            REQUIRE_NOTHROW(log.addNoShow());
-            REQUIRE(log.log().size() == 2);
-
-            BotTest::SuggestionLogItem item = log.log()[0];
-
-            // testing if suggestion was correctly added
-            REQUIRE(item.suggestion == sug);
-            REQUIRE(item.from == from);
-            REQUIRE(item.show == show);
-            REQUIRE(item.showed);
-
-            // testing that second suggestion was correctly added
-            REQUIRE_FALSE(log.log()[1].showed);
-
-            // testing exceptions
-            REQUIRE_THROWS_AS(log.addShow(show), std::runtime_error&);
-            REQUIRE_NOTHROW(log.addSuggestion(from, sug));
-            REQUIRE_THROWS_AS(log.addSuggestion(from, sug), std::runtime_error&);
-
-            // testing clearing
-            REQUIRE(log.waiting());
-            log.clear();
-            REQUIRE_FALSE(log.waiting());
         }
     }
 }

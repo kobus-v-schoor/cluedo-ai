@@ -12,6 +12,16 @@
 
 namespace AI {
     /**
+     * \brief Maximum amount of times the deductor loop can run
+     *
+     * This is added as a safety feature to prevent infinite loops should something go wrong in one
+     * of the deductors
+     */
+    const int MAX_DEDUCTOR_RUN_COUNT = 100;
+
+    class Deductor;
+
+    /**
      * \brief The main AI class - clients and servers will spawn and use only this class.
      *
      * This class can be used to replace a human player in the game of Cluedo. Please note that this
@@ -102,12 +112,116 @@ namespace AI {
             };
 
             /**
+             * \brief Used to mark various attributes for cards (the "notes" the player is making)
+             */
+            struct Notes {
+                /**
+                 * \brief Player was dealt the card during game init
+                 */
+                bool dealt = false;
+
+                /**
+                 * \brief Player has "seen" the card i.e. the player has seen the card because
+                 * another player showed it to them
+                 */
+                bool seen = false;
+
+                /**
+                 * \brief Player has shown the card to someone else
+                 */
+                bool shown = false;
+
+                /**
+                 * \brief Player does not have the card
+                 */
+                bool lacks = false;
+
+                /**
+                 * \brief Deduced that the player has the card
+                 */
+                bool deduced = false;
+
+                /**
+                 * \returns true if a conclusion can be made about a player and a card
+                 */
+                bool concluded();
+
+                /**
+                 * \returns true if a player has or has seen a card
+                 * \note first check that a conclusion has been drawn by calling concluded()
+                 * \throw std::logic_error if conflicting attributes has been set
+                 */
+                bool conclusion();
+            };
+
+            /**
+             * \brief This gets used in the SuggestionLog() class
+             */
+            struct SuggestionLogItem {
+                Suggestion suggestion = Suggestion(Player(0), Weapon(0), Room(0));
+                Player from;
+                Player show;
+                bool showed;
+            };
+
+            /**
+             * \brief abstracts suggestion logging.
+             *
+             * This is done because the madeSuggestion() and shownCard() function are called
+             * separately. If the two aren't correctly used in conjunction with each other the
+             * integrity of the log could be at risk. This class only adds entries if they are
+             * correctly logged and hence insures integrity of the log.
+             */
+            class SuggestionLog {
+                public:
+                    /**
+                     * \brief Adds a suggestion to the log
+                     * \throw std::runtime_error if trying to add a suggestion while waiting
+                     */
+                    void addSuggestion(Player from, Suggestion sug);
+
+                    /**
+                     * \brief Adds a player that showed a card
+                     * \throw std::runtime_error if not waiting for player
+                     */
+                    void addShow(Player player);
+
+                    /**
+                     * \brief Adds a no-show to the log
+                     * \throw std::runtime_error if not waiting for player
+                     */
+                    void addNoShow();
+
+                    /**
+                     * \returns true if waiting for player
+                     */
+                    bool waiting();
+
+                    /**
+                     * \brief Stops the log from waiting (useful on next turn
+                     */
+                    void clear();
+
+                    /**
+                     * \returns the log
+                     */
+                    std::vector<SuggestionLogItem> log();
+
+                private:
+                    bool waitingForShow = false;
+                    SuggestionLogItem staging;
+                    std::vector<SuggestionLogItem> _log;
+            };
+
+            /**
              * \brief Bot class constructor
              * \param player The board character the AI will be playing as
              * \param order The order in which players will play, with the first element being the
              * first player.
              */
             Bot(Player player, std::vector<Player> order);
+
+            ~Bot();
 
             /**
              * \brief Set the cards dealt to the player
@@ -218,106 +332,9 @@ namespace AI {
         // using protected so that unit-tests class can change access specification
         protected:
             /**
-             * \brief Used to mark various attributes for cards (the "notes" the player is making)
+             * \brief runs through all the deductors to make new deductions
              */
-            struct Notes {
-                /**
-                 * \brief Player was dealt the card during game init
-                 */
-                bool dealt = false;
-
-                /**
-                 * \brief Player has "seen" the card i.e. the player has seen the card because
-                 * another player showed it to them
-                 */
-                bool seen = false;
-
-                /**
-                 * \brief Player has shown the card to someone else
-                 */
-                bool shown = false;
-
-                /**
-                 * \brief Player does not have the card
-                 */
-                bool lacks = false;
-
-                /**
-                 * \brief Deduced that the player has the card
-                 */
-                bool deduced = false;
-
-                /**
-                 * \returns true if a conclusion can be made about a player and a card
-                 */
-                bool concluded();
-
-                /**
-                 * \returns true if a player has or has seen a card
-                 * \note first check that a conclusion has been drawn by calling concluded()
-                 * \throw std::logic_error if conflicting attributes has been set
-                 */
-                bool conclusion();
-            };
-
-            /**
-             * \brief This gets used in the SuggestionLog() class
-             */
-            struct SuggestionLogItem {
-                Suggestion suggestion = Suggestion(Player(0), Weapon(0), Room(0));
-                Player from;
-                Player show;
-                bool showed;
-            };
-
-            /**
-             * \brief abstracts suggestion logging.
-             *
-             * This is done because the madeSuggestion() and shownCard() function are called
-             * separately. If the two aren't correctly used in conjunction with each other the
-             * integrity of the log could be at risk. This class only adds entries if they are
-             * correctly logged and hence insures integrity of the log.
-             */
-            class SuggestionLog {
-                public:
-                    /**
-                     * \brief Adds a suggestion to the log
-                     * \throw std::runtime_error if trying to add a suggestion while waiting
-                     */
-                    void addSuggestion(Player from, Suggestion sug);
-
-                    /**
-                     * \brief Adds a player that showed a card
-                     * \throw std::runtime_error if not waiting for player
-                     */
-                    void addShow(Player player);
-
-                    /**
-                     * \brief Adds a no-show to the log
-                     * \throw std::runtime_error if not waiting for player
-                     */
-                    void addNoShow();
-
-                    /**
-                     * \returns true if waiting for player
-                     */
-                    bool waiting();
-
-                    /**
-                     * \brief Stops the log from waiting (useful on next turn
-                     */
-                    void clear();
-
-                    /**
-                     * \returns the log
-                     */
-                    std::vector<SuggestionLogItem> log();
-
-                private:
-                    bool waitingForShow = false;
-                    SuggestionLogItem staging;
-                    std::vector<SuggestionLogItem> _log;
-            };
+            void runDeductors();
 
             /**
              * \brief The player this bot is playing as
@@ -343,6 +360,12 @@ namespace AI {
              * \brief Records all the suggestions along with whether somebody showed a card
              */
             SuggestionLog log;
+
+            /**
+             * \brief This will hold pointers to instances of every deductor type
+             * \note needs to be deleted in destructor
+             */
+            std::vector<Deductor*> deductors;
     };
 }
 

@@ -5,6 +5,10 @@
 
 #include "../include/bot.h"
 
+// deductors
+#include "../include/deductor.h"
+#include "../include/deductors/local-exclude.h"
+
 using namespace AI;
 
 Bot::Card::Card(Bot::Player p):
@@ -111,7 +115,15 @@ std::vector<Bot::SuggestionLogItem> Bot::SuggestionLog::log()
 Bot::Bot(const Player player, std::vector<Player> order) :
     player(player),
     order(order)
-{}
+{
+    deductors.push_back(new LocalExcludeDeductor());
+}
+
+Bot::~Bot()
+{
+    for (auto d : deductors)
+        delete d;
+}
 
 void Bot::setCards(const std::vector<Card> cards)
 {
@@ -129,6 +141,7 @@ void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
 void Bot::movePlayer(const Player player, Position position)
 {
     board[player] = position;
+    //runDeductors();
 }
 
 void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
@@ -139,11 +152,13 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
 void Bot::shownCard(Player showed)
 {
     log.addShow(showed);
+    runDeductors();
 }
 
 void Bot::noOtherShownCard()
 {
     log.addNoShow();
+    runDeductors();
 }
 
 int Bot::getMove(int allowedMoves){ return 0; }
@@ -155,15 +170,35 @@ void Bot::showCard(Player player, Card card)
     notes[this->player][card].seen = true;
     notes[player][card].dealt = true;
     notes[player][card].shown = true;
+    runDeductors();
 }
 
-void Bot::noShowCard(){}
+void Bot::noShowCard()
+{
+    //runDeductors();
+}
 
 Bot::Card Bot::getCard(std::vector<Card> cards){ return Card(Player(0)); }
 
 void Bot::newTurn()
 {
     log.clear();
+}
+
+void Bot::runDeductors()
+{
+    bool made;
+    int count = 0;
+    do {
+        made = false;
+        for (auto d : deductors) {
+            if (d->run(log, notes)) {
+                made = true;
+                break;
+            }
+        }
+        count++;
+    } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
 }
 
 // vim: set expandtab textwidth=100:
