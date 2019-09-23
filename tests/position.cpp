@@ -54,6 +54,18 @@ TEST_CASE("Position class", "[position]") {
         REQUIRE_THAT(Position(50).getNeighbours(), Equals(Board::board[50]));
 
         REQUIRE(int(Position(10)) == 10);
+
+        Position::Path p1(0);
+        p1.append(1);
+        p1.append(2);
+
+        Position::Path p2(3);
+        p2.append(4);
+        p2.append(5);
+
+        p1.append(p2);
+
+        REQUIRE_THAT(p1.getPath(), Equals(std::vector<int>{0, 1, 2, 3, 4, 5}));
     }
 
     SECTION("path logic") {

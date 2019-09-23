@@ -38,6 +38,64 @@ Bot::Suggestion::Suggestion(Player p, Weapon w, Room r):
     room(r)
 {}
 
+bool Bot::Suggestion::operator==(const Suggestion& other)
+{
+    return (player == other.player) && (weapon == other.weapon) && (room == other.room);
+}
+
+void Bot::SuggestionLog::addSuggestion(Player from, Suggestion sug)
+{
+    if (waiting())
+        throw std::runtime_error("already waiting for show");
+    staging.suggestion = sug;
+    staging.from = from;
+    waitingForShow = true;
+}
+
+void Bot::SuggestionLog::addShow(Player player)
+{
+    if (!waiting()) {
+        LOG_ERR("SuggestionLog modified in wrong order - AI was probably notified of a suggestion"
+                << " in the wrong order");
+        throw std::runtime_error("suggestion hasn't been set");
+    }
+
+    staging.show = player;
+    staging.showed = true;
+    _log.push_back(staging);
+    waitingForShow = false;
+}
+
+void Bot::SuggestionLog::addNoShow()
+{
+    if (!waiting()) {
+        LOG_ERR("SuggestionLog modified in wrong order - AI was probably notified of a suggestion"
+                << " in the wrong order");
+        throw std::runtime_error("suggestion hasn't been set");
+    }
+    staging.showed = false;
+    _log.push_back(staging);
+    waitingForShow = false;
+}
+
+bool Bot::SuggestionLog::waiting()
+{
+    return waitingForShow;
+}
+
+void Bot::SuggestionLog::clear()
+{
+    if (waiting())
+        LOG_ERR("Suggestion log cleared while waiting for player - AI probably wasn't notified what"
+                << " happened after a suggestion was made");
+    waitingForShow = false;
+}
+
+std::vector<Bot::SuggestionLogItem> Bot::SuggestionLog::log()
+{
+    return _log;
+}
+
 Bot::Bot(const Player player, std::vector<Player> order) :
     player(player),
     order(order)
@@ -61,9 +119,20 @@ void Bot::movePlayer(const Player player, Position position)
     board[player] = position;
 }
 
-void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse){}
+void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
+{
+    log.addSuggestion(player, suggestion);
+}
 
-void Bot::shownCard(Player asked, Player showed){}
+void Bot::shownCard(Player showed)
+{
+    log.addShow(showed);
+}
+
+void Bot::noOtherShownCard()
+{
+    log.addNoShow();
+}
 
 int Bot::getMove(int allowedMoves){ return 0; }
 
@@ -79,5 +148,10 @@ void Bot::showCard(Player player, Card card)
 void Bot::noShowCard(){}
 
 Bot::Card Bot::getCard(std::vector<Card> cards){ return Card(Player(0)); }
+
+void Bot::newTurn()
+{
+    log.clear();
+}
 
 // vim: set expandtab textwidth=100:

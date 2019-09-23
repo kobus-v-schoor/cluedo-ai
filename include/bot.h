@@ -94,9 +94,11 @@ namespace AI {
                  */
                 Suggestion(Player p, Weapon w, Room r);
 
-                const Player player;
-                const Weapon weapon;
-                const Room room;
+                bool operator==(const Suggestion& other);
+
+                Player player;
+                Weapon weapon;
+                Room room;
             };
 
             /**
@@ -137,8 +139,9 @@ namespace AI {
              * \param player The player who made the suggestion
              * \param suggestion The suggestion the player made
              * \param accuse Set to true if the suggestion was a wrong accusation
+             * \note Remember to call the shownCard() or noOtherShownCard() function after using
+             * this function to notify the AI if another player was able to show a card!
              */
-            NOT_IMPLEMENTED
             void madeSuggestion(Player player, Suggestion suggestion, bool accuse = false);
 
             /**
@@ -147,11 +150,17 @@ namespace AI {
              * This should be used to notify the AI that one player was able to show another player
              * a card after the other player asked about a card.
              *
-             * \param asked The player that asked the question/made a suggestion
              * \param showed The player that showed the other player a card
+             * \note Remember to call this or noOtherShownCard() after calling madeSuggestion()!
              */
-            NOT_IMPLEMENTED
-            void shownCard(Player asked, Player showed);
+            void shownCard(Player showed);
+
+            /**
+             * \brief Used to notify the AI that no other player was able to show a card for another
+             * player that made a suggestion
+             * \note Remember to call this or shownCard() after calling madeSuggestion()!
+             */
+            void noOtherShownCard();
 
             /**
              * \brief Used to request a position where AI wants to be moved to
@@ -201,6 +210,11 @@ namespace AI {
             NOT_IMPLEMENTED
             Card getCard(std::vector<Card> cards);
 
+            /**
+             * \brief Used to notify the AI that a new turn has just started.
+             */
+            void newTurn();
+
         // using protected so that unit-tests class can change access specification
         protected:
             /**
@@ -222,6 +236,69 @@ namespace AI {
                  * \brief Player has shown the card to someone else
                  */
                 bool shown = false;
+
+                /** \brief Player does not have the card
+                 */
+                bool lacks = false;
+            };
+
+            /**
+             * \brief This gets used in the SuggestionLog() class
+             */
+            struct SuggestionLogItem {
+                Suggestion suggestion = Suggestion(Player(0), Weapon(0), Room(0));
+                Player from;
+                Player show;
+                bool showed;
+            };
+
+            /**
+             * \brief abstracts suggestion logging.
+             *
+             * This is done because the madeSuggestion() and shownCard() function are called
+             * separately. If the two aren't correctly used in conjunction with each other the
+             * integrity of the log could be at risk. This class only adds entries if they are
+             * correctly logged and hence insures integrity of the log.
+             */
+            class SuggestionLog {
+                public:
+                    /**
+                     * \brief Adds a suggestion to the log
+                     * \throw std::runtime_error if trying to add a suggestion while waiting
+                     */
+                    void addSuggestion(Player from, Suggestion sug);
+
+                    /**
+                     * \brief Adds a player that showed a card
+                     * \throw std::runtime_error if not waiting for player
+                     */
+                    void addShow(Player player);
+
+                    /**
+                     * \brief Adds a no-show to the log
+                     * \throw std::runtime_error if not waiting for player
+                     */
+                    void addNoShow();
+
+                    /**
+                     * \returns true if waiting for player
+                     */
+                    bool waiting();
+
+                    /**
+                     * \brief Stops the log from waiting (useful on next turn
+                     */
+                    void clear();
+
+                    /**
+                     * \returns the log
+                     */
+                    std::vector<SuggestionLogItem> log();
+
+                private:
+                    bool waitingForShow = false;
+                    SuggestionLogItem staging;
+                    std::vector<SuggestionLogItem> _log;
             };
 
             /**
@@ -243,6 +320,11 @@ namespace AI {
              * \brief Holds all the positions of all the players on the board
              */
             std::map<Player, int> board;
+
+            /**
+             * \brief Records all the suggestions along with whether somebody showed a card
+             */
+            SuggestionLog log;
     };
 }
 
