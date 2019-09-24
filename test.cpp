@@ -9,6 +9,7 @@
 
 //// deductors
 #include "include/deductors/local-exclude.h"
+#include "include/deductors/no-show.h"
 
 int main(int argc, char* argv[]) {
     // pre-test setup

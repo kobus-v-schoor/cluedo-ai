@@ -8,6 +8,7 @@
 // deductors
 #include "../include/deductor.h"
 #include "../include/deductors/local-exclude.h"
+#include "../include/deductors/no-show.h"
 
 using namespace AI;
 
@@ -117,6 +118,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     order(order)
 {
     deductors.push_back(new LocalExcludeDeductor());
+    deductors.push_back(new NoShowDeductor(order));
 }
 
 Bot::~Bot()
@@ -202,7 +204,21 @@ void Bot::runDeductors()
     } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
 }
 
-void Bot::notesCleanup() {}
+void Bot::notesCleanup()
+{
+    // sets all the other player's cards to lacking if a conclusion has been made about a card
+    for (auto n : notes) {
+        for (auto c : n.second) {
+            if (c.second.concluded() && c.second.conclusion()) {
+                for (auto o : notes) {
+                    if (o.first == n.first)
+                        continue;
+                    o.second[c.first].lacks = true;
+                }
+            }
+        }
+    }
+}
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
 {
@@ -244,6 +260,17 @@ std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room)
         case Bot::COURTYARD: ostream << "COURTYARD"; break;
         case Bot::GARAGE: ostream << "GARAGE"; break;
         case Bot::GAMES_ROOM: ostream << "GAMES_ROOM"; break;
+    }
+
+    return ostream;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Card card)
+{
+    switch (card.type) {
+        case Bot::Card::PLAYER: ostream << Bot::Player(card.card); break;
+        case Bot::Card::WEAPON: ostream << Bot::Weapon(card.card); break;
+        case Bot::Card::ROOM: ostream << Bot::Room(card.card); break;
     }
 
     return ostream;

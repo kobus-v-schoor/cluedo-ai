@@ -361,7 +361,6 @@ namespace AI {
              * \brief Tidies notes to a consistent state, e.g. if a card was found, mark it "lacks"
              * for all of the other players
              */
-            NOT_IMPLEMENTED
             void notesCleanup();
 
             /**
@@ -400,6 +399,7 @@ namespace AI {
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player);
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Weapon weapon);
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room);
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Card card);
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion);
 
 // vim: set expandtab textwidth=100:
