@@ -201,4 +201,56 @@ void Bot::runDeductors()
     } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
 }
 
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
+{
+    switch (player) {
+        case Bot::SCARLET: ostream << "SCARLET"; break;
+        case Bot::PLUM: ostream << "PLUM"; break;
+        case Bot::PEACOCK: ostream << "PEACOCK"; break;
+        case Bot::GREEN: ostream << "GREEN"; break;
+        case Bot::MUSTARD: ostream << "MUSTARD"; break;
+        case Bot::WHITE: ostream << "WHITE"; break;
+    }
+
+    return ostream;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Weapon weapon)
+{
+    switch (weapon) {
+        case Bot::CANDLESTICK: ostream << "CANDLESTICK"; break;
+        case Bot::KNIFE: ostream << "KNIFE"; break;
+        case Bot::LEAD_PIPE: ostream << "LEAD_PIPE"; break;
+        case Bot::REVOLVER: ostream << "REVOLVER"; break;
+        case Bot::ROPE: ostream << "ROPE"; break;
+        case Bot::SPANNER: ostream << "SPANNER"; break;
+    }
+
+    return ostream;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room)
+{
+    switch (room) {
+        case Bot::BEDROOM: ostream << "BEDROOM"; break;
+        case Bot::BATHROOM: ostream << "BATHROOM"; break;
+        case Bot::STUDY: ostream << "STUDY"; break;
+        case Bot::KITCHEN: ostream << "KITCHEN"; break;
+        case Bot::DINING_ROOM: ostream << "DINING_ROOM"; break;
+        case Bot::LIVING_ROOM: ostream << "LIVING_ROOM"; break;
+        case Bot::COURTYARD: ostream << "COURTYARD"; break;
+        case Bot::GARAGE: ostream << "GARAGE"; break;
+        case Bot::GAMES_ROOM: ostream << "GAMES_ROOM"; break;
+    }
+
+    return ostream;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion)
+{
+    ostream << "(P: " << suggestion.player << ", W: " << suggestion.weapon << ", R: " <<
+        suggestion.room;
+    return ostream;
+}
+
 // vim: set expandtab textwidth=100:

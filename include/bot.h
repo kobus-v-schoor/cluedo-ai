@@ -9,6 +9,7 @@
 #include <vector>
 #include <utility>
 #include <map>
+#include <ostream>
 
 namespace AI {
     /**
@@ -158,9 +159,24 @@ namespace AI {
              * \brief This gets used in the SuggestionLog() class
              */
             struct SuggestionLogItem {
+                /**
+                 * \brief The suggestion the player made
+                 */
                 Suggestion suggestion = Suggestion(Player(0), Weapon(0), Room(0));
+
+                /**
+                 * \brief The player who made the suggestion
+                 */
                 Player from;
+
+                /**
+                 * \brief If a player showed a card, the player who showed the card
+                 */
                 Player show;
+
+                /**
+                 * \brief True if a player showed a card
+                 */
                 bool showed;
             };
 
@@ -368,5 +384,10 @@ namespace AI {
             std::vector<Deductor*> deductors;
     };
 }
+
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player);
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Weapon weapon);
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room);
+std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion);
 
 // vim: set expandtab textwidth=100:

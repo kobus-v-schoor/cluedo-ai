@@ -24,7 +24,6 @@ namespace AI {
         public:
             LocalExcludeDeductor(){}
 
-            NOT_IMPLEMENTED
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
     };
 }
