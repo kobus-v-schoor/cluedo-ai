@@ -191,15 +191,18 @@ void Bot::runDeductors()
     int count = 0;
     do {
         made = false;
-        for (auto d : deductors) {
-            if (d->run(log, notes)) {
+        for (auto d : deductors)
+            if (d->run(log, notes))
                 made = true;
-                break;
-            }
-        }
+
+        if (made)
+            notesCleanup();
+
         count++;
     } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
 }
+
+void Bot::notesCleanup() {}
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
 {

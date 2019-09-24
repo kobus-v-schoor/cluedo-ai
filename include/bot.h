@@ -244,7 +244,12 @@ namespace AI {
              *
              * This will be used in the beginning of the game when the player gets dealt various
              * cards.  This can also be used when the AI takes over from a human player to inform
-             * the AI player of all the cards the human player has been shown during the game,
+             * the AI player of all the cards the human player has been shown during the game. If
+             * any cards are put "face-up" in the beginning of the game, also use this function to
+             * notify the AI.
+             * \note This function only updates the cards, it doesn't replace it, meaning that you
+             * can call this function twice with different cards and both sets of cards will be
+             * saved.
              */
             void setCards(std::vector<Card> cards);
 
@@ -348,9 +353,16 @@ namespace AI {
         // using protected so that unit-tests class can change access specification
         protected:
             /**
-             * \brief runs through all the deductors to make new deductions
+             * \brief Runs through all the deductors to make new deductions
              */
             void runDeductors();
+
+            /**
+             * \brief Tidies notes to a consistent state, e.g. if a card was found, mark it "lacks"
+             * for all of the other players
+             */
+            NOT_IMPLEMENTED
+            void notesCleanup();
 
             /**
              * \brief The player this bot is playing as
