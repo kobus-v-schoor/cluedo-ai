@@ -24,22 +24,22 @@ bool LocalExcludeDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
             found = true;
             LOG_LOGIC("Deduced that " << l.show << " has " << sug.room << " (suggestion:" << sug
                     << ") (local-exclude)");
+            notes[l.show][sug.room].has = true;
             notes[l.show][sug.room].deduced = true;
-            notes[l.show][sug.room].dealt = true;
         } else if ((notes[l.show][sug.player].lacks && notes[l.show][sug.room].lacks) &&
                 !notes[l.show][sug.weapon].concluded()) {
             found = true;
             LOG_LOGIC("Deduced that " << l.show << " has " << sug.weapon << " (suggestion:" << sug
                     << ") (local-exclude)");
+            notes[l.show][sug.weapon].has = true;
             notes[l.show][sug.weapon].deduced = true;
-            notes[l.show][sug.weapon].dealt = true;
         } else if ((notes[l.show][sug.weapon].lacks && notes[l.show][sug.room].lacks) &&
                 !notes[l.show][sug.player].concluded()) {
             found = true;
             LOG_LOGIC("Deduced that " << l.show << " has " << sug.player << " (suggestion:" << sug
                     << ") (local-exclude)");
+            notes[l.show][sug.player].has = true;
             notes[l.show][sug.player].deduced = true;
-            notes[l.show][sug.player].dealt = true;
         }
     }
 

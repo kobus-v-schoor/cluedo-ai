@@ -3,6 +3,7 @@
 #include "../include/tests.h"
 
 using namespace AI;
+using Catch::Matchers::Equals;
 
 /**
  * Class used to allow access to private members to allow testing of some private
@@ -21,6 +22,7 @@ class BotTest : public Bot {
 
         using Bot::player;
         using Bot::notes;
+        using Bot::order;
 };
 
 TEST_CASE("Suggestion struct", "[suggestion]") {
@@ -56,17 +58,23 @@ TEST_CASE("Card class", "[card]") {
 TEST_CASE("Bot class", "[bot]") {
     SECTION("Notes struct") {
         BotTest::Notes notes;
-        REQUIRE_FALSE(notes.dealt);
-        REQUIRE_FALSE(notes.shown);
+        REQUIRE_FALSE(notes.has);
         REQUIRE_FALSE(notes.seen);
         REQUIRE_FALSE(notes.lacks);
+        REQUIRE_FALSE(notes.deduced);
 
-        notes.dealt = true;
+        notes.has = true;
         REQUIRE(notes.concluded());
-        REQUIRE(notes.conclusion());
+        REQUIRE(notes.knows());
 
+        notes.has = false;
         notes.lacks = true;
-        REQUIRE_THROWS_AS(notes.conclusion(), std::logic_error&);
+        REQUIRE(notes.concluded());
+        REQUIRE_FALSE(notes.knows());
+
+        notes.seen = true;
+        REQUIRE(notes.concluded());
+        REQUIRE(notes.knows());
     }
 
     SECTION("SuggestionLog class") {
@@ -113,22 +121,24 @@ TEST_CASE("Bot class", "[bot]") {
     // functionality.
     // This section should only test the bare minimum to minimize testing of private members
     SECTION("private") {
-        Bot::Player player = randEnum(Bot::Player::WHITE);
+        Bot::Player player = Bot::Player::SCARLET;
         BotTest bot(player, { Bot::Player::SCARLET, Bot::Player::PLUM, Bot::Player::PEACOCK ,
                 Bot::Player::GREEN });
 
         REQUIRE(bot.player == player);
+        REQUIRE_THAT(bot.order, Equals(std::vector<Bot::Player>({ Bot::Player::SCARLET,
+                        Bot::Player::PLUM, Bot::Player::PEACOCK, Bot::Player::GREEN })));
 
         SECTION("show and set cards") {
             Bot::Card sc(randEnum(Bot::Weapon::SPANNER));
             bot.setCards({ sc });
-            REQUIRE(bot.notes[player][sc].dealt);
+            REQUIRE(bot.notes[player][sc].has);
 
-            Bot::Player other = randEnum(Bot::Player::WHITE);
-            bot.showCard(other, sc);
-            REQUIRE(bot.notes[player][sc].seen);
-            REQUIRE(bot.notes[other][sc].dealt);
-            REQUIRE(bot.notes[other][sc].shown);
+            Bot::Player other = Bot::PLUM;
+            Bot::Card sc2(randEnum(Bot::GAMES_ROOM));
+            bot.showCard(other, sc2);
+            REQUIRE(bot.notes[player][sc2].seen);
+            REQUIRE(bot.notes[other][sc2].has);
         }
     }
 }

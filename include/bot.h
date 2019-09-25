@@ -117,20 +117,15 @@ namespace AI {
              */
             struct Notes {
                 /**
-                 * \brief Player was dealt the card during game init
+                 * \brief Player has the card
                  */
-                bool dealt = false;
+                bool has = false;
 
                 /**
                  * \brief Player has "seen" the card i.e. the player has seen the card because
                  * another player showed it to them
                  */
                 bool seen = false;
-
-                /**
-                 * \brief Player has shown the card to someone else
-                 */
-                bool shown = false;
 
                 /**
                  * \brief Player does not have the card
@@ -143,16 +138,15 @@ namespace AI {
                 bool deduced = false;
 
                 /**
-                 * \returns true if a conclusion can be made about a player and a card
+                 * \returns true if we know if the player has the card or not
                  */
                 bool concluded();
 
                 /**
-                 * \returns true if a player has or has seen a card
-                 * \note first check that a conclusion has been drawn by calling concluded()
-                 * \throw std::logic_error if conflicting attributes has been set
+                 * \returns true if we know the player knows about a card. Returns false if we
+                 * don't know if they know.
                  */
-                bool conclusion();
+                bool knows();
             };
 
             /**
@@ -321,8 +315,8 @@ namespace AI {
             Suggestion getSuggestion();
 
             /**
-             * \brief Used to show the player a card if another player was able to show a card when
-             * the bot made a suggestion
+             * \brief Used to show the bot a card if another player was able to show a card when the
+             * bot made a suggestion
              * \param player the player that showed the card
              * \param card the card that was shown
              */

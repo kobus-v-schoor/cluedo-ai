@@ -50,14 +50,12 @@ bool Bot::Suggestion::operator==(const Suggestion& other)
 
 bool Bot::Notes::concluded()
 {
-    return dealt || seen || shown || lacks || deduced;
+    return has || lacks;
 }
 
-bool Bot::Notes::conclusion()
+bool Bot::Notes::knows()
 {
-    if ((dealt || seen || shown || deduced) != !lacks)
-        throw std::logic_error("conflicting deductions has been set for note");
-    return !lacks;
+    return has || seen;
 }
 
 void Bot::SuggestionLog::addSuggestion(Player from, Suggestion sug)
@@ -130,7 +128,8 @@ Bot::~Bot()
 void Bot::setCards(const std::vector<Card> cards)
 {
     for (auto c : cards)
-        notes[player][c].dealt = true;
+        notes[player][c].has = true;
+    notesCleanup();
 }
 
 void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
@@ -170,8 +169,8 @@ Bot::Suggestion Bot::getSuggestion(){ return Suggestion(Player(0),Weapon(0),Room
 void Bot::showCard(Player player, Card card)
 {
     notes[this->player][card].seen = true;
-    notes[player][card].dealt = true;
-    notes[player][card].shown = true;
+    notes[player][card].has = true;
+    notesCleanup();
     runDeductors();
 }
 
@@ -209,7 +208,7 @@ void Bot::notesCleanup()
     // sets all the other player's cards to lacking if a conclusion has been made about a card
     for (auto n : notes) {
         for (auto c : n.second) {
-            if (c.second.concluded() && c.second.conclusion()) {
+            if (c.second.concluded() && c.second.has) {
                 for (auto o : notes) {
                     if (o.first == n.first)
                         continue;
