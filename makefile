@@ -55,14 +55,16 @@ test: \
  tests/board.o \
  tests/bot.o \
  tests/deductors/no-show.o \
+ tests/deductors/seen.o \
  tests/deductors/local-exclude.o \
  tests/position.o \
  src/board.o \
  src/bot.o \
  src/deductors/no-show.o \
+ src/deductors/seen.o \
  src/deductors/local-exclude.o \
  src/position.o
-	g++ $(gf) test.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/local-exclude.o tests/position.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/local-exclude.o src/position.o -o test
+	g++ $(gf) test.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o -o test
 
 test.o: \
  test.cpp \
@@ -71,6 +73,7 @@ test.o: \
  include/board.h \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
+ include/deductors/seen.h \
  include/macros.h \
  include/deductor.h
 	$(go) test.cpp -o test.o
@@ -96,6 +99,15 @@ tests/deductors/no-show.o: \
  include/macros.h \
  include/position.h
 	$(go) tests/deductors/no-show.cpp -o tests/deductors/no-show.o
+
+tests/deductors/seen.o: \
+ tests/deductors/seen.cpp \
+ include/deductors/seen.h \
+ include/deductor.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) tests/deductors/seen.cpp -o tests/deductors/seen.o
 
 tests/deductors/local-exclude.o: \
  tests/deductors/local-exclude.cpp \
@@ -124,6 +136,7 @@ src/bot.o: \
  include/deductor.h \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
+ include/deductors/seen.h \
  include/macros.h \
  include/position.h
 	$(go) src/bot.cpp -o src/bot.o
@@ -136,6 +149,15 @@ src/deductors/no-show.o: \
  include/macros.h \
  include/position.h
 	$(go) src/deductors/no-show.cpp -o src/deductors/no-show.o
+
+src/deductors/seen.o: \
+ src/deductors/seen.cpp \
+ include/deductors/seen.h \
+ include/deductor.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) src/deductors/seen.cpp -o src/deductors/seen.o
 
 src/deductors/local-exclude.o: \
  src/deductors/local-exclude.cpp \
@@ -160,10 +182,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/local-exclude.o tests/position.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
+	rm -f test.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/macros.h include/deductor.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/board.cpp src/bot.cpp src/deductors/no-show.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/board.cpp src/bot.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile

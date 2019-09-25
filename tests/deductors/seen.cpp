@@ -1,13 +1,13 @@
 #include <catch/catch.hpp>
-#include "../../include/deductors/local-exclude.h"
+#include "../../include/deductors/seen.h"
 
 using namespace AI;
 
-TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
+TEST_CASE("SeenDeductor", "[seen-deductor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
 
-    LocalExcludeDeductor deductor;
+    SeenDeductor deductor;
 
     Bot::Player askPlayer = Bot::SCARLET;
     Bot::Player showPlayer = Bot::PLUM;
@@ -17,9 +17,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
     Bot::Room sugRoom = Bot::BEDROOM;
 
     SECTION("no deductions") {
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         notes[showPlayer][sugPlayer].lacks = true;
 
@@ -28,9 +28,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
 
         REQUIRE_FALSE(deductor.run(log, notes));
 
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
     }
 
     sugPlayer = Bot::Player(int(sugPlayer) + 1);
@@ -38,9 +38,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
     sugRoom = Bot::Room(int(sugRoom) + 1);
 
     SECTION("deduce room") {
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         notes[showPlayer][sugPlayer].lacks = true;
         notes[showPlayer][sugWeapon].lacks = true;
@@ -50,10 +50,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
 
         REQUIRE(deductor.run(log, notes));
 
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE(notes[showPlayer][sugRoom].has);
-        REQUIRE(notes[showPlayer][sugRoom].deduced);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE(notes[askPlayer][sugRoom].seen);
 
         REQUIRE_FALSE(deductor.run(log, notes));
     }
@@ -63,9 +62,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
     sugRoom = Bot::Room(int(sugRoom) + 1);
 
     SECTION("deduce weapon") {
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         notes[showPlayer][sugPlayer].lacks = true;
         notes[showPlayer][sugRoom].lacks = true;
@@ -75,10 +74,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
 
         REQUIRE(deductor.run(log, notes));
 
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE(notes[showPlayer][sugWeapon].has);
-        REQUIRE(notes[showPlayer][sugWeapon].deduced);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         REQUIRE_FALSE(deductor.run(log, notes));
     }
@@ -88,9 +86,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
     sugRoom = Bot::Room(int(sugRoom) + 1);
 
     SECTION("deduce player") {
-        REQUIRE_FALSE(notes[showPlayer][sugPlayer].has);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE_FALSE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         notes[showPlayer][sugWeapon].lacks = true;
         notes[showPlayer][sugRoom].lacks = true;
@@ -100,10 +98,9 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
 
         REQUIRE(deductor.run(log, notes));
 
-        REQUIRE(notes[showPlayer][sugPlayer].has);
-        REQUIRE(notes[showPlayer][sugPlayer].deduced);
-        REQUIRE_FALSE(notes[showPlayer][sugWeapon].has);
-        REQUIRE_FALSE(notes[showPlayer][sugRoom].has);
+        REQUIRE(notes[askPlayer][sugPlayer].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugWeapon].seen);
+        REQUIRE_FALSE(notes[askPlayer][sugRoom].seen);
 
         REQUIRE_FALSE(deductor.run(log, notes));
     }

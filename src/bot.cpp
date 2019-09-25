@@ -9,6 +9,7 @@
 #include "../include/deductor.h"
 #include "../include/deductors/local-exclude.h"
 #include "../include/deductors/no-show.h"
+#include "../include/deductors/seen.h"
 
 using namespace AI;
 
@@ -117,6 +118,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
 {
     deductors.push_back(new LocalExcludeDeductor());
     deductors.push_back(new NoShowDeductor(order));
+    deductors.push_back(new SeenDeductor());
 }
 
 Bot::~Bot()
