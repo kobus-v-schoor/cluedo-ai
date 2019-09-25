@@ -116,6 +116,18 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     player(player),
     order(order)
 {
+    // creates a notes entry for every player
+    for (auto o : order)
+        notes[o];
+
+    // sets all cards as lacking for this player
+    for (int i = 0; i <= int(WHITE); i++)
+        notes[player][Player(i)].lacks = true;
+    for (int i = 0; i <= int(SPANNER); i++)
+        notes[player][Weapon(i)].lacks = true;
+    for (int i = 0; i <= int(GAMES_ROOM); i++)
+        notes[player][Room(i)].lacks = true;
+
     deductors.push_back(new LocalExcludeDeductor());
     deductors.push_back(new NoShowDeductor(order));
     deductors.push_back(new SeenDeductor());
@@ -129,9 +141,12 @@ Bot::~Bot()
 
 void Bot::setCards(const std::vector<Card> cards)
 {
-    for (auto c : cards)
+    for (auto c : cards) {
         notes[player][c].has = true;
-    notesCleanup();
+        notes[player][c].lacks = false;
+    }
+
+    notesMarkLacking();
 }
 
 void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
@@ -172,7 +187,7 @@ void Bot::showCard(Player player, Card card)
 {
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
-    notesCleanup();
+    notesMarkLacking();
     runDeductors();
 }
 
@@ -188,6 +203,11 @@ void Bot::newTurn()
     log.clear();
 }
 
+std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> Bot::getNotes()
+{
+    return notes;
+}
+
 void Bot::runDeductors()
 {
     bool made;
@@ -199,13 +219,13 @@ void Bot::runDeductors()
                 made = true;
 
         if (made)
-            notesCleanup();
+            notesMarkLacking();
 
         count++;
     } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
 }
 
-void Bot::notesCleanup()
+void Bot::notesMarkLacking()
 {
     // sets all the other player's cards to lacking if a conclusion has been made about a card
     for (auto n : notes) {

@@ -344,18 +344,47 @@ namespace AI {
              */
             void newTurn();
 
+            /**
+             * This is mostly meant for unit testing to inspect the notes of the AI as it is playing
+             * \returns the notes the bot has made so far
+             */
+            std::map<Player, std::map<Card, Notes>> getNotes();
+
         // using protected so that unit-tests class can change access specification
         protected:
+            /**
+             * \brief This will hold the cards that are deduced to be in the envelope
+             */
+            struct Envelope {
+                Player player;
+                bool havePlayer = false;
+
+                Weapon weapon;
+                bool haveWeapon = false;
+
+                Room room;
+                bool haveRoom = false;
+            };
+
             /**
              * \brief Runs through all the deductors to make new deductions
              */
             void runDeductors();
 
             /**
-             * \brief Tidies notes to a consistent state, e.g. if a card was found, mark it "lacks"
-             * for all of the other players
+             * \brief If a card has been found, mark the card as lacking for all the other players
+             *
+             * This intended to be run whenever the notes has been modified
              */
-            void notesCleanup();
+            void notesMarkLacking();
+
+            /**
+             * \brief Check if it is possible to deduce that a card is in the envelope by checking
+             * if all the players lack a card
+             * \returns true if an envelope card has been found
+             */
+            NOT_IMPLEMENTED
+            bool findEnvelope();
 
             /**
              * \brief The player this bot is playing as
@@ -387,6 +416,11 @@ namespace AI {
              * \note needs to be deleted in destructor
              */
             std::vector<Deductor*> deductors;
+
+            /**
+             * \brief See Envelope for more details
+             */
+            Envelope envelope;
     };
 }
 

@@ -17,8 +17,7 @@ class BotTest : public Bot {
         {}
 
         using Bot::Notes;
-        using Bot::SuggestionLog;
-        using Bot::SuggestionLogItem;
+        using Bot::Envelope;
 
         using Bot::player;
         using Bot::notes;
@@ -57,7 +56,7 @@ TEST_CASE("Card class", "[card]") {
 
 TEST_CASE("Bot class", "[bot]") {
     SECTION("Notes struct") {
-        BotTest::Notes notes;
+        Bot::Notes notes;
         REQUIRE_FALSE(notes.has);
         REQUIRE_FALSE(notes.seen);
         REQUIRE_FALSE(notes.lacks);
@@ -83,7 +82,7 @@ TEST_CASE("Bot class", "[bot]") {
         Bot::Suggestion sug(randEnum(Bot::Player::WHITE), randEnum(Bot::Weapon::SPANNER),
                 randEnum(Bot::Room::GAMES_ROOM));
 
-        BotTest::SuggestionLog log;
+        Bot::SuggestionLog log;
 
         // test adding a suggestion
         REQUIRE_NOTHROW(log.addSuggestion(from, sug));
@@ -95,7 +94,7 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE_NOTHROW(log.addNoShow());
         REQUIRE(log.log().size() == 2);
 
-        BotTest::SuggestionLogItem item = log.log()[0];
+        Bot::SuggestionLogItem item = log.log()[0];
 
         // testing if suggestion was correctly added
         REQUIRE(item.suggestion == sug);
@@ -117,6 +116,37 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE_FALSE(log.waiting());
     }
 
+    SECTION("set cards") {
+        Bot::Player player = Bot::SCARLET;
+        Bot::Weapon weapon = Bot::CANDLESTICK;
+
+        Bot bot(player, {});
+
+        Bot::Card card(weapon);
+        bot.setCards({ card });
+
+        auto notes = bot.getNotes();
+
+        REQUIRE(notes[player][weapon].has);
+        REQUIRE_FALSE(notes[player][weapon].lacks);
+    }
+
+    SECTION("showing card to bot") {
+        Bot::Player player = Bot::SCARLET;
+        Bot::Player other = Bot::PLUM;
+        Bot::Weapon weapon = Bot::CANDLESTICK;
+
+        Bot bot(player, {});
+
+        Bot::Card card(weapon);
+        bot.showCard(other, card);
+
+        auto notes = bot.getNotes();
+
+        REQUIRE(notes[player][card].seen);
+        REQUIRE(notes[other][card].has);
+    }
+
     // this is the only section that should use the BotTest class - this section will test private
     // functionality.
     // This section should only test the bare minimum to minimize testing of private members
@@ -125,20 +155,18 @@ TEST_CASE("Bot class", "[bot]") {
         BotTest bot(player, { Bot::Player::SCARLET, Bot::Player::PLUM, Bot::Player::PEACOCK ,
                 Bot::Player::GREEN });
 
-        REQUIRE(bot.player == player);
-        REQUIRE_THAT(bot.order, Equals(std::vector<Bot::Player>({ Bot::Player::SCARLET,
-                        Bot::Player::PLUM, Bot::Player::PEACOCK, Bot::Player::GREEN })));
+        SECTION("init") {
+            REQUIRE(bot.player == player);
+            REQUIRE_THAT(bot.order, Equals(std::vector<Bot::Player>({ Bot::Player::SCARLET,
+                            Bot::Player::PLUM, Bot::Player::PEACOCK, Bot::Player::GREEN })));
+            REQUIRE(bot.notes.size() == bot.order.size());
+        }
 
-        SECTION("show and set cards") {
-            Bot::Card sc(randEnum(Bot::Weapon::SPANNER));
-            bot.setCards({ sc });
-            REQUIRE(bot.notes[player][sc].has);
-
-            Bot::Player other = Bot::PLUM;
-            Bot::Card sc2(randEnum(Bot::GAMES_ROOM));
-            bot.showCard(other, sc2);
-            REQUIRE(bot.notes[player][sc2].seen);
-            REQUIRE(bot.notes[other][sc2].has);
+        SECTION("Envelope struct") {
+            BotTest::Envelope env;
+            REQUIRE_FALSE(env.havePlayer);
+            REQUIRE_FALSE(env.haveWeapon);
+            REQUIRE_FALSE(env.haveRoom);
         }
     }
 }
