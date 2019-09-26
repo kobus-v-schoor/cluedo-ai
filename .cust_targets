@@ -11,6 +11,7 @@ coverage:
 	gcov -r src/*.cpp; \
 	lcov --directory src/ --capture --output-file coverage.info; \
 	lcov --remove coverage.info -o coverage.info '/usr/include/*'; \
+	lcov --remove coverage.info -o coverage.info '*/include/*'; \
 	lcov --list coverage.info; \
 	echo coverage > last_build; \
 	find . -name '*.gcda' -delete -or -name '*.gcno' -delete; \
