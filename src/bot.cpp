@@ -112,6 +112,12 @@ std::vector<Bot::SuggestionLogItem> Bot::SuggestionLog::log()
     return _log;
 }
 
+bool Bot::Envelope::operator!=(const Envelope& other)
+{
+    return (havePlayer != other.havePlayer) || (haveWeapon != other.haveWeapon) ||
+        (haveRoom != other.haveRoom);
+}
+
 Bot::Bot(const Player player, std::vector<Player> order) :
     player(player),
     order(order)
@@ -227,18 +233,81 @@ void Bot::runDeductors()
 
 void Bot::notesMarkLacking()
 {
-    // sets all the other player's cards to lacking if a conclusion has been made about a card
-    for (auto n : notes) {
-        for (auto c : n.second) {
-            if (c.second.concluded() && c.second.has) {
-                for (auto o : notes) {
-                    if (o.first == n.first)
+    for (auto player : order) {
+        for (auto card : notes[player]) {
+            if (card.second.has) {
+                for (auto otherp : order) {
+                    if (otherp == player)
                         continue;
-                    o.second[c.first].lacks = true;
+                    notes[otherp][card.first].lacks = true;
                 }
             }
         }
     }
+}
+
+bool Bot::findEnvelope()
+{
+    Envelope env = envelope;
+
+    if (!envelope.havePlayer) {
+        for (int i = 0; (i <= int(Player::WHITE)); i++) {
+            bool found = false;
+            for (auto player : order) {
+                if (!notes[player][Player(i)].lacks) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                envelope.player = Player(i);
+                envelope.havePlayer = true;
+                LOG_LOGIC("Deduced that " << envelope.player << " is the player in the envelope");
+                break;
+            }
+        }
+    }
+
+    if (!envelope.haveWeapon) {
+        for (int i = 0; (i <= int(Weapon::SPANNER)); i++) {
+            bool found = false;
+            for (auto player : order) {
+                if (!notes[player][Weapon(i)].lacks) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                envelope.weapon = Weapon(i);
+                envelope.haveWeapon = true;
+                LOG_LOGIC("Deduced that " << envelope.weapon << " is the weapon in the envelope");
+                break;
+            }
+        }
+    }
+
+    if (!envelope.haveRoom) {
+        for (int i = 0; (i <= int(Room::GAMES_ROOM)); i++) {
+            bool found = false;
+            for (auto player : order) {
+                if (!notes[player][Room(i)].lacks) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                envelope.room = Room(i);
+                envelope.haveRoom = true;
+                LOG_LOGIC("Deduced that " << envelope.room << " is the room in the envelope");
+                break;
+            }
+        }
+    }
+
+    return env != envelope;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)

@@ -364,6 +364,14 @@ namespace AI {
 
                 Room room;
                 bool haveRoom = false;
+
+                /**
+                 * \brief Returns true if any of the "have" variables is different between the two
+                 * envelopes.
+                 * \warning This doesn't check for inequality between the actual cards, just the
+                 * "have" variables.
+                 */
+                bool operator!=(const Envelope& other);
             };
 
             /**
@@ -383,7 +391,6 @@ namespace AI {
              * if all the players lack a card
              * \returns true if an envelope card has been found
              */
-            NOT_IMPLEMENTED
             bool findEnvelope();
 
             /**
