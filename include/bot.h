@@ -177,10 +177,10 @@ namespace AI {
             /**
              * \brief abstracts suggestion logging.
              *
-             * This is done because the madeSuggestion() and shownCard() function are called
-             * separately. If the two aren't correctly used in conjunction with each other the
-             * integrity of the log could be at risk. This class only adds entries if they are
-             * correctly logged and hence insures integrity of the log.
+             * This is done because the madeSuggestion() and otherShownCard()/noOtherShownCard()
+             * functions are called separately. If the two aren't correctly used in conjunction with
+             * each other the integrity of the log could be at risk. This class only adds entries if
+             * they are correctly logged and hence insures integrity of the log.
              */
             class SuggestionLog {
                 public:
@@ -268,8 +268,8 @@ namespace AI {
              * \param player The player who made the suggestion
              * \param suggestion The suggestion the player made
              * \param accuse Set to true if the suggestion was a wrong accusation
-             * \note Remember to call the shownCard() or noOtherShownCard() function after using
-             * this function to notify the AI if another player was able to show a card!
+             * \note Remember to call the otherShownCard() or noOtherShownCard() function after
+             * using this function to notify the AI if another player was able to show a card!
              */
             void madeSuggestion(Player player, Suggestion suggestion, bool accuse = false);
 
@@ -282,12 +282,12 @@ namespace AI {
              * \param showed The player that showed the other player a card
              * \note Remember to call this or noOtherShownCard() after calling madeSuggestion()!
              */
-            void shownCard(Player showed);
+            void otherShownCard(Player showed);
 
             /**
              * \brief Used to notify the AI that no other player was able to show a card for another
              * player that made a suggestion
-             * \note Remember to call this or shownCard() after calling madeSuggestion()!
+             * \note Remember to call this or otherShownCard() after calling madeSuggestion()!
              */
             void noOtherShownCard();
 
@@ -323,8 +323,8 @@ namespace AI {
             void showCard(Player player, Card card);
 
             /**
-             * \brief Used to tell the bot that no player was able to show a card after a suggestion
-             * has been made
+             * \brief Used to tell the bot that no player was able to show a card after it made a
+             * suggestion
              */
             NOT_IMPLEMENTED
             void noShowCard();
@@ -376,7 +376,20 @@ namespace AI {
             };
 
             /**
+             * \brief Should be run every time the notes change so that any deductions or required
+             * notes operations (mark lacking) can be run.
+             *
+             * This will run various other functions, they will be marked as such in their
+             * documentation
+             *
+             * \param nolacking if true skip notesMarkLacking(), can be used if no notes have been
+             * changed and only deductions should be run
+             */
+            void notesHook(bool nolacking=false);
+
+            /**
              * \brief Runs through all the deductors to make new deductions
+             * \note This is will be run as part of the notesHook() function
              */
             void runDeductors();
 
@@ -384,6 +397,7 @@ namespace AI {
              * \brief If a card has been found, mark the card as lacking for all the other players
              *
              * This intended to be run whenever the notes has been modified
+             * \note This is will be run as part of the notesHook() function
              */
             void notesMarkLacking();
 
@@ -391,6 +405,7 @@ namespace AI {
              * \brief Check if it is possible to deduce that a card is in the envelope by checking
              * if all the players lack a card
              * \returns true if an envelope card has been found
+             * \note This is will be run as part of the notesHook() function
              */
             bool findEnvelope();
 

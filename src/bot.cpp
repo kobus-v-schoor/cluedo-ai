@@ -152,7 +152,7 @@ void Bot::setCards(const std::vector<Card> cards)
         notes[player][c].lacks = false;
     }
 
-    notesMarkLacking();
+    notesHook();
 }
 
 void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
@@ -165,7 +165,6 @@ void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
 void Bot::movePlayer(const Player player, Position position)
 {
     board[player] = position;
-    //runDeductors();
 }
 
 void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
@@ -173,16 +172,16 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
     log.addSuggestion(player, suggestion);
 }
 
-void Bot::shownCard(Player showed)
+void Bot::otherShownCard(Player showed)
 {
     log.addShow(showed);
-    runDeductors();
+    notesHook(true);
 }
 
 void Bot::noOtherShownCard()
 {
     log.addNoShow();
-    runDeductors();
+    notesHook(true);
 }
 
 int Bot::getMove(int allowedMoves){ return 0; }
@@ -193,8 +192,7 @@ void Bot::showCard(Player player, Card card)
 {
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
-    notesMarkLacking();
-    runDeductors();
+    notesHook();
 }
 
 void Bot::noShowCard()
@@ -212,6 +210,14 @@ void Bot::newTurn()
 std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> Bot::getNotes()
 {
     return notes;
+}
+
+void Bot::notesHook(bool nolacking)
+{
+    if (!nolacking)
+        notesMarkLacking();
+    runDeductors();
+    findEnvelope();
 }
 
 void Bot::runDeductors()
