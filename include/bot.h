@@ -332,12 +332,13 @@ namespace AI {
             /**
              * \brief Used to request a card to show to another player that made a suggestion
              *
+             * \param player The player that made the suggestion
              * \param cards The cards that the AI has to choose from as specified by the server
              *
              * \returns the card to show to the other player
              */
             NOT_IMPLEMENTED
-            Card getCard(std::vector<Card> cards);
+            Card getCard(Player player, std::vector<Card> cards);
 
             /**
              * \brief Used to notify the AI that a new turn has just started.

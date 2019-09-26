@@ -202,7 +202,7 @@ void Bot::noShowCard()
     //runDeductors();
 }
 
-Bot::Card Bot::getCard(std::vector<Card> cards){ return Card(Player(0)); }
+Bot::Card Bot::getCard(Player player, std::vector<Card> cards){ return Card(Player(0)); }
 
 void Bot::newTurn()
 {
