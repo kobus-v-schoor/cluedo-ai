@@ -4,6 +4,7 @@
  */
 
 #include "../include/bot.h"
+#include "../include/board.h"
 
 // deductors
 #include "../include/deductor.h"
@@ -193,7 +194,26 @@ void Bot::noOtherShownCard()
     notesHook(true);
 }
 
-int Bot::getMove(int allowedMoves){ return 0; }
+int Bot::getMove(int allowedMoves)
+{
+    Deck deck = getWantedDeck();
+    std::vector<bool> occupied(Board::BOARD_SIZE, false);
+
+    for (auto p : board)
+        occupied[p.second] = true;
+
+    if (!envelope.haveRoom) {
+    } else if (!envelope.havePlayer) {
+    } else if (!envelope.haveWeapon) {
+    } else {
+        Position dest(0);
+        Position cur(board[player]);
+
+        return cur.path(dest, occupied, 1).partial(allowedMoves, occupied);
+    }
+
+    return 0;
+}
 
 Bot::Suggestion Bot::getSuggestion(){ return Suggestion(Player(0),Weapon(0),Room(0)); }
 
@@ -330,6 +350,8 @@ bool Bot::findEnvelope()
 
     return env != envelope;
 }
+
+Deck Bot::getWantedDeck() { return Deck(); }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
 {

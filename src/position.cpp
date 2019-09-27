@@ -43,6 +43,20 @@ int Position::Path::dist() const
     return d;
 }
 
+int Position::Path::partial(int moves, std::vector<bool> occupied)
+{
+    if (dist() <= moves)
+        return path.back();
+
+    Position start(path[0]);
+    int pos = 0;
+
+    while (start.path(Position(path[pos]), occupied, 1).dist() < moves)
+        pos++;
+
+    return path[pos];
+}
+
 Position::Path::operator int() const
 {
     return dist();

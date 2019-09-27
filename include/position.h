@@ -64,6 +64,17 @@ namespace AI {
                     int dist() const;
 
                     /**
+                     * \brief Returns up to where in the path you can get in the moves given
+                     * \param moves the amount of moves allowed
+                     * \param occupied the positions on the board that are occupied
+                     * \returns the position in the path where you can get with the moves given
+                     * \warning this will _not_ take in to account multi-room logic - it is assumed
+                     * the path can be followed in one turn.
+                     * \throw std::invalid_argument if the occupied vector is of incorrect size
+                     */
+                    int partial(int moves, std::vector<bool> occupied);
+
+                    /**
                      * \brief Alias for dist()
                      */
                     operator int() const;

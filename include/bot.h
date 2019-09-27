@@ -31,6 +31,26 @@ namespace AI {
      * class is stateful, meaning that the instance that you create of this class should be used for
      * the entirety of the game as the AI will store and learn from data passed to it as the game
      * progresses (will not just use the current state of the board).
+     *
+     * The general strategy for the AI will be as follows:
+     *
+     * -# Firstly, the bot will make finding the room in the envelope the priority. We do this
+     *  because after finding the room, your choice of where you make suggestions are a lot less
+     *  limited since you can make suggestions for rooms you have in your deck or for the room in
+     *  the envelope.
+     * -# After finding the room we now look for the player. The player is chosen next since once
+     *  you have the player you can take on offensive strategies by moving other players on the
+     *  board to rooms you know are not in the envelope.
+     * -# Lastly, we try to identify the weapon. At this point we can take a full offensive strategy
+     *  by moving players around on the board away from their targets (since we already know the
+     *  player and room).
+     *
+     * During the entire game all events are logged for later analysis. After every event deductors
+     * are run to try and extract more information than what we get from just making suggestions
+     * (tries to determine what cards other players have and don't have). Suggestions (and hence the
+     * destinations on the board) are chosen by using predictors. Predictors also use past events to
+     * identify cards that have a high probability of being in the envelope to maximise the chance
+     * of making an early correct guess of the card in the envelope.
      */
     class Bot {
         public:
@@ -416,6 +436,18 @@ namespace AI {
              * \note This is will be run as part of the notesHook() function
              */
             bool findEnvelope();
+
+            /**
+             * \brief Finds all the cards we might want to make suggestions about
+             *
+             * This will find all the cards that we don't have certainty about and of which we
+             * should thus make suggestions. If we already know about a card in the envelope the
+             * deck will be empty for that card type.
+             *
+             * \returns a Deck with all the cards we can make a suggestion about
+             */
+            NOT_IMPLEMENTED
+            Deck getWantedDeck();
 
             /**
              * \brief The player this bot is playing as

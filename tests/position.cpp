@@ -8,26 +8,50 @@ using Catch::Matchers::Equals;
 using Catch::Matchers::VectorContains;
 
 TEST_CASE("Path struct", "[path]") {
-    Position::Path p(25);
+    SECTION("dist") {
+        Position::Path p(25);
 
-    // empty
-    REQUIRE(int(p) == 0);
+        // empty
+        REQUIRE(int(p) == 0);
 
-    // one tile
-    p.append(15);
-    REQUIRE(int(p) == 1);
+        // one tile
+        p.append(15);
+        REQUIRE(int(p) == 1);
 
-    // two tiles
-    p.append(10);
-    REQUIRE(int(p) == 2);
+        // two tiles
+        p.append(10);
+        REQUIRE(int(p) == 2);
 
-    // into room
-    p.append(7);
-    REQUIRE(int(p) == 3);
+        // into room
+        p.append(7);
+        REQUIRE(int(p) == 3);
 
-    // through room - shouldn't add dist
-    p.append(8);
-    REQUIRE(int(p) == 3);
+        // through room - shouldn't add dist
+        p.append(8);
+        REQUIRE(int(p) == 3);
+    }
+
+    SECTION("partial") {
+        std::vector<bool> occupied(Board::BOARD_SIZE, false);
+        occupied[55] = true;
+
+        Position::Path path(54);
+        path.append(64);
+        path.append(65);
+        path.append(66);
+        path.append(56);
+        path.append(46);
+        path.append(36);
+        path.append(0);
+
+        REQUIRE_THAT(path.getPath(), Equals(std::vector<int>({54, 64, 65, 66, 56, 46, 36, 0})));
+
+        REQUIRE(path.partial(0, occupied) == 54);
+        REQUIRE(path.partial(1, occupied) == 64);
+        REQUIRE(path.partial(2, occupied) == 65);
+        REQUIRE(path.partial(7, occupied) == 0);
+        REQUIRE(path.partial(8, occupied) == 0);
+    }
 }
 
 void validatePath(Position::Path path, std::vector<bool> occupied = std::vector<bool>())
