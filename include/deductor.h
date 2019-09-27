@@ -4,6 +4,7 @@
  */
 
 #pragma once
+
 #include "bot.h"
 #include <map>
 

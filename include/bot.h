@@ -22,6 +22,7 @@ namespace AI {
 
     class Deductor;
     class Predictor;
+    class Deck;
 
     /**
      * \brief The main AI class - clients and servers will spawn and use only this class.
@@ -393,6 +394,12 @@ namespace AI {
              * \note This is will be run as part of the notesHook() function
              */
             void runDeductors();
+
+            /**
+             * \brief This runs all the predictors and updates the given deck with the calculated
+             * probabilities
+             */
+            void runPredictors(Deck& deck);
 
             /**
              * \brief If a card has been found, mark the card as lacking for all the other players

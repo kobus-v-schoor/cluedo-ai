@@ -12,7 +12,9 @@
 #include "../include/deductors/seen.h"
 
 // predictors
+#include "../include/deck.h"
 #include "../include/predictor.h"
+#include "../include/predictors/seen.h"
 
 using namespace AI;
 
@@ -140,6 +142,8 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     deductors.push_back(new LocalExcludeDeductor());
     deductors.push_back(new NoShowDeductor(order));
     deductors.push_back(new SeenDeductor());
+
+    predictors.push_back(new SeenPredictor());
 }
 
 Bot::~Bot()
@@ -240,6 +244,12 @@ void Bot::runDeductors()
 
         count++;
     } while (made && (count < MAX_DEDUCTOR_RUN_COUNT));
+}
+
+void Bot::runPredictors(Deck& deck)
+{
+    for (auto p : predictors)
+        p->run(deck, notes, log);
 }
 
 void Bot::notesMarkLacking()
