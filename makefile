@@ -137,6 +137,7 @@ src/bot.o: \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
  include/deductors/seen.h \
+ include/predictor.h \
  include/macros.h \
  include/position.h
 	$(go) src/bot.cpp -o src/bot.o
@@ -185,7 +186,7 @@ clean:
 	rm -f test.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/board.cpp src/bot.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/board.cpp src/bot.cpp include/predictor.h src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile

@@ -21,6 +21,7 @@ namespace AI {
     const int MAX_DEDUCTOR_RUN_COUNT = 100;
 
     class Deductor;
+    class Predictor;
 
     /**
      * \brief The main AI class - clients and servers will spawn and use only this class.
@@ -439,6 +440,12 @@ namespace AI {
              * \note needs to be deleted in destructor
              */
             std::vector<Deductor*> deductors;
+
+            /**
+             * \brief This will hold pointers to instances of every predictor type
+             * \note needs to be deleted in destructor
+             */
+            std::vector<Predictor*> predictors;
 
             /**
              * \brief See Envelope for more details

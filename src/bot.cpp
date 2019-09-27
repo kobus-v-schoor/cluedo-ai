@@ -11,6 +11,9 @@
 #include "../include/deductors/no-show.h"
 #include "../include/deductors/seen.h"
 
+// predictors
+#include "../include/predictor.h"
+
 using namespace AI;
 
 Bot::Card::Card(Bot::Player p):
@@ -143,6 +146,8 @@ Bot::~Bot()
 {
     for (auto d : deductors)
         delete d;
+    for (auto p : predictors)
+        delete p;
 }
 
 void Bot::setCards(const std::vector<Card> cards)
