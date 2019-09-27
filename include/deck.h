@@ -15,7 +15,8 @@ namespace AI {
      * \brief Used to group multiple cards and their probability scores
      *
      * This will be used to group multiple cards, while keeping the card types separate. The
-     * struct will also contain the probability scores for the various cards;
+     * struct will also contain the probability scores for the various cards. A higher score means
+     * that the card is more likely to _not_ be in the envelope.
      */
     struct Deck {
         std::vector<Bot::Player> players;

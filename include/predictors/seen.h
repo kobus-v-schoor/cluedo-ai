@@ -11,7 +11,7 @@ namespace AI {
      * If a player is shown a card from a suggestion, and we know that they have already seen two
      * cards from that suggestion, there is a good chance that the person showed them the third
      * card. This means we should avoid the third card since the person who showed the card probably
-     * has it
+     * has it.
      */
     class SeenPredictor : public Predictor {
         public:

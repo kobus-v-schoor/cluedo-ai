@@ -62,11 +62,12 @@ test: \
  src/predictors/seen.o \
  src/board.o \
  src/bot.o \
+ src/predictor.o \
  src/deductors/no-show.o \
  src/deductors/seen.o \
  src/deductors/local-exclude.o \
  src/position.o
-	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o -o test
+	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o -o test
 
 test.o: \
  test.cpp \
@@ -166,6 +167,15 @@ src/bot.o: \
  include/position.h
 	$(go) src/bot.cpp -o src/bot.o
 
+src/predictor.o: \
+ src/predictor.cpp \
+ include/predictor.h \
+ include/bot.h \
+ include/deck.h \
+ include/macros.h \
+ include/position.h
+	$(go) src/predictor.cpp -o src/predictor.o
+
 src/deductors/no-show.o: \
  src/deductors/no-show.cpp \
  include/deductors/no-show.h \
@@ -207,10 +217,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
+	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile
