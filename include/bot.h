@@ -373,7 +373,10 @@ namespace AI {
              */
             std::map<Player, std::map<Card, Notes>> getNotes();
 
-        // using protected so that unit-tests class can change access specification
+        /**
+         * Using protected instead of private so that the BotTest subclass can access the private
+         * members. See tests/bot.cpp for more information on the design choice
+         */
         protected:
             /**
              * \brief This will hold the cards that are deduced to be in the envelope
@@ -446,7 +449,6 @@ namespace AI {
              *
              * \returns a Deck with all the cards we can make a suggestion about
              */
-            NOT_IMPLEMENTED
             Deck getWantedDeck();
 
             /**

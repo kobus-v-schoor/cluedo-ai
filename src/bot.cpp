@@ -351,7 +351,57 @@ bool Bot::findEnvelope()
     return env != envelope;
 }
 
-Deck Bot::getWantedDeck() { return Deck(); }
+Deck Bot::getWantedDeck()
+{
+    Deck deck;
+
+    if (!envelope.havePlayer) {
+        for (int i = 0; i <= int(Player::WHITE); i++) {
+            bool found = false;
+            for (auto p : order) {
+                if (notes[p][Player(i)].has) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                deck.players.push_back(Player(i));
+        }
+    }
+
+    if (!envelope.haveWeapon) {
+        for (int i = 0; i <= int(Weapon::SPANNER); i++) {
+            bool found = false;
+            for (auto p : order) {
+                if (notes[p][Weapon(i)].has) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                deck.weapons.push_back(Weapon(i));
+        }
+    }
+
+    if (!envelope.haveRoom) {
+        for (int i = 0; i <= int(Room::GAMES_ROOM); i++) {
+            bool found = false;
+            for (auto p : order) {
+                if (notes[p][Room(i)].has) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                deck.rooms.push_back(Room(i));
+        }
+    }
+
+    return deck;
+}
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
 {

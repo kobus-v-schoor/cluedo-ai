@@ -1,32 +1,17 @@
 #include <catch/catch.hpp>
+#include <algorithm>
 #include "../include/bot.h"
 #include "../include/tests.h"
+#include "../include/deck.h"
 
 using namespace AI;
 using Catch::Matchers::Equals;
 
-/**
- * Class used to allow access to private members to allow testing of some private
- * functionality which would be very difficult to test using just the public members of the Bot
- * class
- */
-class BotTest : public Bot {
-    public:
-        BotTest(Player p, std::vector<Player> o) :
-            Bot::Bot(p, o)
-        {}
-
-        using Bot::Notes;
-        using Bot::Envelope;
-
-        using Bot::notesMarkLacking;
-        using Bot::findEnvelope;
-
-        using Bot::player;
-        using Bot::notes;
-        using Bot::order;
-        using Bot::envelope;
-};
+template <typename T>
+bool contains(std::vector<T> vec, T obj)
+{
+    return std::find(vec.begin(), vec.end(), obj) != vec.end();
+}
 
 TEST_CASE("Suggestion struct", "[suggestion]") {
     auto p = randEnum(Bot::Player::WHITE);
@@ -151,14 +136,39 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE(notes[other][card].has);
     }
 
-    // this is the only section that should use the BotTest class - this section will test private
-    // functionality.
-    // This section should only test the bare minimum to minimize testing of private members
+    /**
+     * This section is specifically intended to test private functionality of the Bot class that
+     * would otherwise be very difficult to consistently test only through the Bot class' public
+     * members. Only functionality that is critical to the correct functioning of the rest of the
+     * class is tested here to minimize testing of private members.
+     */
     SECTION("private") {
+        /**
+         * By inheriting from the Bot class and changing the access specifier to public for select
+         * members we are able to access private members from the unit tests.
+         */
+        class BotTest : public Bot {
+            public:
+                BotTest(Player p, std::vector<Player> o) :
+                    Bot::Bot(p, o)
+                {}
+
+                using Bot::Notes;
+                using Bot::Envelope;
+
+                using Bot::notesMarkLacking;
+                using Bot::findEnvelope;
+                using Bot::getWantedDeck;
+
+                using Bot::player;
+                using Bot::notes;
+                using Bot::order;
+                using Bot::envelope;
+        };
+
         Bot::Player player = Bot::Player::SCARLET;
         std::vector<Bot::Player> order = { Bot::Player::SCARLET, Bot::Player::PLUM,
             Bot::Player::PEACOCK , Bot::Player::GREEN };
-
 
         SECTION("init") {
             BotTest bot(player, order);
@@ -281,6 +291,50 @@ TEST_CASE("Bot class", "[bot]") {
                 REQUIRE_FALSE(bot.findEnvelope());
                 REQUIRE_FALSE(bot.envelope.havePlayer);
             }
+        }
+
+        SECTION("getWantedDeck") {
+            BotTest bot(player, order);
+
+            std::vector<Bot::Player> wantedPlayers = { Bot::SCARLET, Bot::PEACOCK, Bot::WHITE };
+            std::vector<Bot::Weapon> wantedWeapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE, Bot::SPANNER };
+            std::vector<Bot::Room> wantedRooms = { Bot::BEDROOM, Bot::DINING_ROOM, Bot::GAMES_ROOM };
+
+            for (int i = 0; i <= int(Bot::WHITE); i++)
+                if (!contains(wantedPlayers, Bot::Player(i)))
+                    bot.notes[order[rand() % order.size()]][Bot::Player(i)].has = true;
+            for (int i = 0; i <= int(Bot::SPANNER); i++)
+                if (!contains(wantedWeapons, Bot::Weapon(i)))
+                    bot.notes[order[rand() % order.size()]][Bot::Weapon(i)].has = true;
+            for (int i = 0; i <= int(Bot::GAMES_ROOM); i++)
+                if (!contains(wantedRooms, Bot::Room(i)))
+                    bot.notes[order[rand() % order.size()]][Bot::Room(i)].has = true;
+
+            Deck deck = bot.getWantedDeck();
+
+            REQUIRE_THAT(deck.players, Equals(wantedPlayers));
+            REQUIRE_THAT(deck.weapons, Equals(wantedWeapons));
+            REQUIRE_THAT(deck.rooms, Equals(wantedRooms));
+
+            bot.envelope.havePlayer = true;
+            deck = bot.getWantedDeck();
+            REQUIRE(deck.players.empty());
+            REQUIRE_THAT(deck.weapons, Equals(wantedWeapons));
+            REQUIRE_THAT(deck.rooms, Equals(wantedRooms));
+
+            bot.envelope.havePlayer = false;
+            bot.envelope.haveWeapon = true;
+            deck = bot.getWantedDeck();
+            REQUIRE(deck.weapons.empty());
+            REQUIRE_THAT(deck.players, Equals(wantedPlayers));
+            REQUIRE_THAT(deck.rooms, Equals(wantedRooms));
+
+            bot.envelope.haveWeapon = false;
+            bot.envelope.haveRoom = true;
+            deck = bot.getWantedDeck();
+            REQUIRE(deck.rooms.empty());
+            REQUIRE_THAT(deck.players, Equals(wantedPlayers));
+            REQUIRE_THAT(deck.weapons, Equals(wantedWeapons));
         }
     }
 }
