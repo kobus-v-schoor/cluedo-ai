@@ -59,6 +59,7 @@ test: \
  tests/deductors/seen.o \
  tests/deductors/local-exclude.o \
  tests/position.o \
+ tests/deck.o \
  src/predictors/seen.o \
  src/board.o \
  src/bot.o \
@@ -66,8 +67,9 @@ test: \
  src/deductors/no-show.o \
  src/deductors/seen.o \
  src/deductors/local-exclude.o \
- src/position.o
-	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o -o test
+ src/position.o \
+ src/deck.o
+	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o -o test
 
 test.o: \
  test.cpp \
@@ -100,6 +102,7 @@ tests/bot.o: \
  tests/bot.cpp \
  include/bot.h \
  include/tests.h \
+ include/deck.h \
  include/macros.h \
  include/position.h
 	$(go) tests/bot.cpp -o tests/bot.o
@@ -138,6 +141,14 @@ tests/position.o: \
  include/macros.h
 	$(go) tests/position.cpp -o tests/position.o
 
+tests/deck.o: \
+ tests/deck.cpp \
+ include/deck.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) tests/deck.cpp -o tests/deck.o
+
 src/predictors/seen.o: \
  src/predictors/seen.cpp \
  include/predictors/seen.h \
@@ -156,6 +167,7 @@ src/board.o: \
 src/bot.o: \
  src/bot.cpp \
  include/bot.h \
+ include/board.h \
  include/deductor.h \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
@@ -210,6 +222,14 @@ src/position.o: \
  include/macros.h
 	$(go) src/position.cpp -o src/position.o
 
+src/deck.o: \
+ src/deck.cpp \
+ include/deck.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) src/deck.cpp -o src/deck.o
+
 run: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
 	./test
 
@@ -217,10 +237,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o ai.tar.gz test
+	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp tests/deck.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp src/deck.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile

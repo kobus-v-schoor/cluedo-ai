@@ -126,7 +126,8 @@ bool Bot::Envelope::operator!=(const Envelope& other)
 
 Bot::Bot(const Player player, std::vector<Player> order) :
     player(player),
-    order(order)
+    order(order),
+    curSuggestion(Player(0), Weapon(0), Room(0))
 {
     // creates a notes entry for every player
     for (auto o : order)
@@ -199,11 +200,42 @@ int Bot::getMove(int allowedMoves)
     Deck deck = getWantedDeck();
     runPredictors(deck);
 
+    deck.sort();
+
     std::vector<bool> occupied(Board::BOARD_SIZE, false);
     for (auto p : board)
         occupied[p.second] = true;
 
     if (!envelope.haveRoom) {
+        auto safePlayers = getSafePlayers();
+        auto safeWeapons = getSafeWeapons();
+
+        if (safePlayers.empty())
+            curSuggestion.player = deck.players[0];
+        else
+            curSuggestion.player = choosePlayerOffensive(safePlayers);
+
+        if (safeWeapons.empty())
+            curSuggestion.weapon = deck.weapons[0];
+        else
+            curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+
+        // find room that we can get to with our allowedMoves
+        size_t r = 0;
+        Position start(board[this->player]);
+        while ((start.path(getRoomPos(deck.rooms[r]), occupied, 1) > allowedMoves) &&
+                (r < deck.rooms.size()))
+            r++;
+
+        // couldn't find a room we can get to
+        if (r == deck.rooms.size()) {
+            // get as near as possible to the highest prob room
+            curSuggestion.room = deck.rooms[0];
+            return start.path(getRoomPos(deck.rooms[0]), occupied, 1).partial(allowedMoves, occupied);
+        } else { // we can get to one of the rooms
+            curSuggestion.room = deck.rooms[r];
+            return getRoomPos(curSuggestion.room);
+        }
     } else if (!envelope.havePlayer) {
     } else if (!envelope.haveWeapon) {
     } else {
@@ -508,9 +540,8 @@ std::vector<Bot::Player> Bot::getSafePlayers()
         if (notes[player][Player(i)].has)
             players.push_back(Player(i));
 
-    // also add envelope player?
-    /* if (envelope.havePlayer) */
-    /*     players.push_back(envelope.player); */
+    if (players.empty() && envelope.havePlayer)
+        players.push_back(envelope.player);
 
     return players;
 }
@@ -523,9 +554,8 @@ std::vector<Bot::Weapon> Bot::getSafeWeapons()
         if (notes[player][Weapon(i)].has)
             weapons.push_back(Weapon(i));
 
-    // also add envelope weapon?
-    /* if (envelope.haveWeapon) */
-    /*     weapons.push_back(envelope.weapons); */
+    if (weapons.empty() && envelope.haveWeapon)
+        weapons.push_back(envelope.weapon);
 
     return weapons;
 }
@@ -538,11 +568,20 @@ std::vector<Bot::Room> Bot::getSafeRooms()
         if (notes[player][Room(i)].has)
             rooms.push_back(Room(i));
 
-    // also add envelope room?
-    /* if (envelope.haveRoom) */
-    /*     rooms.push_back(envelope.room); */
+    if (rooms.empty() && envelope.haveRoom)
+        rooms.push_back(envelope.room);
 
     return rooms;
+}
+
+int Bot::getRoomPos(Room room)
+{
+    return 0;
+}
+
+Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices)
+{
+    return choices[rand() % choices.size()];
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)

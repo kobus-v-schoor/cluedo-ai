@@ -24,6 +24,12 @@ namespace AI {
         std::vector<Bot::Room> rooms;
 
         std::map<Bot::Card, int> scores;
+
+        /**
+         * \brief sorts the cards by their probability scores from highest probability (lower score)
+         * to lower probability (higher score)
+         */
+        void sort();
     };
 };
 

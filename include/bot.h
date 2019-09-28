@@ -482,6 +482,18 @@ namespace AI {
             std::vector<Room> getSafeRooms();
 
             /**
+             * \brief Returns the integer position where a room is located
+             */
+            NOT_IMPLEMENTED
+            int getRoomPos(Room room);
+
+            /**
+             * \brief Tries to choose a player that will be disadvantaged the most
+             */
+            NOT_IMPLEMENTED
+            Player choosePlayerOffensive(std::vector<Player> choices);
+
+            /**
              * \brief The player this bot is playing as
              */
             Player player;
@@ -522,6 +534,11 @@ namespace AI {
              * \brief See Envelope for more details
              */
             Envelope envelope;
+
+            /**
+             * \brief Temporarily holds the suggestion the bot is planning to make
+             */
+            Suggestion curSuggestion;
     };
 }
 
