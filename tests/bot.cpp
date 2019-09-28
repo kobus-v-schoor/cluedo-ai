@@ -14,9 +14,9 @@ bool contains(std::vector<T> vec, T obj)
 }
 
 TEST_CASE("Suggestion struct", "[suggestion]") {
-    auto p = randEnum(Bot::Player::WHITE);
-    auto w = randEnum(Bot::Weapon::SPANNER);
-    auto r = randEnum(Bot::Room::GAMES_ROOM);
+    auto p = randEnum(Bot::MAX_PLAYER);
+    auto w = randEnum(Bot::MAX_WEAPON);
+    auto r = randEnum(Bot::MAX_ROOM);
     Bot::Suggestion sug(p, w, r);
     REQUIRE(sug.player == p);
     REQUIRE(sug.weapon == w);
@@ -25,19 +25,19 @@ TEST_CASE("Suggestion struct", "[suggestion]") {
 
 TEST_CASE("Card class", "[card]") {
     // test player
-    auto p = randEnum(Bot::Player::WHITE);
+    auto p = randEnum(Bot::MAX_PLAYER);
     Bot::Card player(p);
     REQUIRE(player.type == Bot::Card::Type::PLAYER);
     REQUIRE(Bot::Player(player.card) == p);
 
     // test weapon
-    auto w = randEnum(Bot::Weapon::SPANNER);
+    auto w = randEnum(Bot::MAX_WEAPON);
     Bot::Card weapon(w);
     REQUIRE(weapon.type == Bot::Card::Type::WEAPON);
     REQUIRE(Bot::Weapon(weapon.card) == w);
 
     // test room
-    auto r = randEnum(Bot::Room::GAMES_ROOM);
+    auto r = randEnum(Bot::MAX_ROOM);
     Bot::Card room(r);
     REQUIRE(room.type == Bot::Card::Type::ROOM);
     REQUIRE(Bot::Room(room.card) == r);
@@ -66,10 +66,10 @@ TEST_CASE("Bot class", "[bot]") {
     }
 
     SECTION("SuggestionLog class") {
-        Bot::Player from = randEnum(Bot::Player::WHITE);
-        Bot::Player show = randEnum(Bot::Player::WHITE);
-        Bot::Suggestion sug(randEnum(Bot::Player::WHITE), randEnum(Bot::Weapon::SPANNER),
-                randEnum(Bot::Room::GAMES_ROOM));
+        Bot::Player from = randEnum(Bot::MAX_PLAYER);
+        Bot::Player show = randEnum(Bot::MAX_PLAYER);
+        Bot::Suggestion sug(randEnum(Bot::MAX_PLAYER), randEnum(Bot::MAX_WEAPON),
+                randEnum(Bot::MAX_ROOM));
 
         Bot::SuggestionLog log;
 
@@ -300,13 +300,13 @@ TEST_CASE("Bot class", "[bot]") {
             std::vector<Bot::Weapon> wantedWeapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE, Bot::SPANNER };
             std::vector<Bot::Room> wantedRooms = { Bot::BEDROOM, Bot::DINING_ROOM, Bot::GAMES_ROOM };
 
-            for (int i = 0; i <= int(Bot::WHITE); i++)
+            for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
                 if (!contains(wantedPlayers, Bot::Player(i)))
                     bot.notes[order[rand() % order.size()]][Bot::Player(i)].has = true;
-            for (int i = 0; i <= int(Bot::SPANNER); i++)
+            for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
                 if (!contains(wantedWeapons, Bot::Weapon(i)))
                     bot.notes[order[rand() % order.size()]][Bot::Weapon(i)].has = true;
-            for (int i = 0; i <= int(Bot::GAMES_ROOM); i++)
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
                 if (!contains(wantedRooms, Bot::Room(i)))
                     bot.notes[order[rand() % order.size()]][Bot::Room(i)].has = true;
 

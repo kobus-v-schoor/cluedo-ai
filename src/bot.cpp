@@ -133,11 +133,11 @@ Bot::Bot(const Player player, std::vector<Player> order) :
         notes[o];
 
     // sets all cards as lacking for this player
-    for (int i = 0; i <= int(WHITE); i++)
+    for (int i = 0; i <= int(MAX_PLAYER); i++)
         notes[player][Player(i)].lacks = true;
-    for (int i = 0; i <= int(SPANNER); i++)
+    for (int i = 0; i <= int(MAX_WEAPON); i++)
         notes[player][Weapon(i)].lacks = true;
-    for (int i = 0; i <= int(GAMES_ROOM); i++)
+    for (int i = 0; i <= int(MAX_ROOM); i++)
         notes[player][Room(i)].lacks = true;
 
     deductors.push_back(new LocalExcludeDeductor());
@@ -197,19 +197,21 @@ void Bot::noOtherShownCard()
 int Bot::getMove(int allowedMoves)
 {
     Deck deck = getWantedDeck();
-    std::vector<bool> occupied(Board::BOARD_SIZE, false);
+    runPredictors(deck);
 
+    std::vector<bool> occupied(Board::BOARD_SIZE, false);
     for (auto p : board)
         occupied[p.second] = true;
 
     if (!envelope.haveRoom) {
+
     } else if (!envelope.havePlayer) {
     } else if (!envelope.haveWeapon) {
     } else {
         Position dest(0);
         Position cur(board[player]);
-
-        return cur.path(dest, occupied, 1).partial(allowedMoves, occupied);
+        Position::Path path = cur.path(dest, occupied, 1);
+        return path.partial(allowedMoves, occupied);
     }
 
     return 0;
@@ -292,7 +294,7 @@ bool Bot::findEnvelope()
     Envelope env = envelope;
 
     if (!envelope.havePlayer) {
-        for (int i = 0; (i <= int(Player::WHITE)); i++) {
+        for (int i = 0; (i <= int(MAX_PLAYER)); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Player(i)].lacks) {
@@ -311,7 +313,7 @@ bool Bot::findEnvelope()
     }
 
     if (!envelope.haveWeapon) {
-        for (int i = 0; (i <= int(Weapon::SPANNER)); i++) {
+        for (int i = 0; (i <= int(MAX_WEAPON)); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Weapon(i)].lacks) {
@@ -330,7 +332,7 @@ bool Bot::findEnvelope()
     }
 
     if (!envelope.haveRoom) {
-        for (int i = 0; (i <= int(Room::GAMES_ROOM)); i++) {
+        for (int i = 0; (i <= int(MAX_ROOM)); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Room(i)].lacks) {
@@ -356,7 +358,7 @@ Deck Bot::getWantedDeck()
     Deck deck;
 
     if (!envelope.havePlayer) {
-        for (int i = 0; i <= int(Player::WHITE); i++) {
+        for (int i = 0; i <= int(MAX_PLAYER); i++) {
             bool found = false;
             for (auto p : order) {
                 if (notes[p][Player(i)].has) {
@@ -371,7 +373,7 @@ Deck Bot::getWantedDeck()
     }
 
     if (!envelope.haveWeapon) {
-        for (int i = 0; i <= int(Weapon::SPANNER); i++) {
+        for (int i = 0; i <= int(MAX_WEAPON); i++) {
             bool found = false;
             for (auto p : order) {
                 if (notes[p][Weapon(i)].has) {
@@ -386,7 +388,7 @@ Deck Bot::getWantedDeck()
     }
 
     if (!envelope.haveRoom) {
-        for (int i = 0; i <= int(Room::GAMES_ROOM); i++) {
+        for (int i = 0; i <= int(MAX_ROOM); i++) {
             bool found = false;
             for (auto p : order) {
                 if (notes[p][Room(i)].has) {
@@ -401,6 +403,18 @@ Deck Bot::getWantedDeck()
     }
 
     return deck;
+}
+
+std::vector<Bot::Player> Bot::getSafePlayers()
+{
+}
+
+std::vector<Bot::Weapon> Bot::getSafeWeapons()
+{
+}
+
+std::vector<Bot::Room> Bot::getSafeRooms()
+{
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)

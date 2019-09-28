@@ -12,14 +12,6 @@
 #include <ostream>
 
 namespace AI {
-    /**
-     * \brief Maximum amount of times the deductor loop can run
-     *
-     * This is added as a safety feature to prevent infinite loops should something go wrong in one
-     * of the deductors
-     */
-    const int MAX_DEDUCTOR_RUN_COUNT = 100;
-
     class Deductor;
     class Predictor;
     class Deck;
@@ -86,6 +78,29 @@ namespace AI {
                 GARAGE,
                 GAMES_ROOM
             };
+
+            /**
+             * \brief Maximum amount of times the deductor loop can run
+             *
+             * This is added as a safety feature to prevent infinite loops should something go wrong
+             * in one of the deductors
+             */
+            static const int MAX_DEDUCTOR_RUN_COUNT = 100;
+
+            /**
+             * \brief This constant can be used as an upper bound for the Player enum in iterations
+             */
+            static const Player MAX_PLAYER = WHITE;
+
+            /**
+             * \brief This constant can be used as an upper bound for the Weapon enum in iterations
+             */
+            static const Weapon MAX_WEAPON = SPANNER;
+
+            /**
+             * \brief This constant can be used as an upper bound for the Room enum in iterations
+             */
+            static const Room MAX_ROOM = GAMES_ROOM;
 
             /**
              * \brief Class used to encapsulate a generic card
@@ -450,6 +465,21 @@ namespace AI {
              * \returns a Deck with all the cards we can make a suggestion about
              */
             Deck getWantedDeck();
+
+            /**
+             * \brief Finds all players that we know no-one has
+             */
+            std::vector<Player> getSafePlayers();
+
+            /**
+             * \brief Finds all weapons that we know no-one has
+             */
+            std::vector<Weapon> getSafeWeapons();
+
+            /**
+             * \brief Finds all rooms that we know no-one has
+             */
+            std::vector<Room> getSafeRooms();
 
             /**
              * \brief The player this bot is playing as
