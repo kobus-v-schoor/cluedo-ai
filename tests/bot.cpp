@@ -109,7 +109,7 @@ TEST_CASE("Bot class", "[bot]") {
         Bot::Player player = Bot::SCARLET;
         Bot::Weapon weapon = Bot::CANDLESTICK;
 
-        Bot bot(player, {});
+        Bot bot(player, { Bot::SCARLET, Bot::PLUM });
 
         Bot::Card card(weapon);
         bot.setCards({ card });
@@ -125,7 +125,7 @@ TEST_CASE("Bot class", "[bot]") {
         Bot::Player other = Bot::PLUM;
         Bot::Weapon weapon = Bot::CANDLESTICK;
 
-        Bot bot(player, {});
+        Bot bot(player, { Bot::SCARLET, Bot::PLUM });
 
         Bot::Card card(weapon);
         bot.showCard(other, card);
@@ -229,67 +229,145 @@ TEST_CASE("Bot class", "[bot]") {
                 REQUIRE_FALSE(bot.findEnvelope());
             }
 
-            SECTION("find player") {
-                BotTest bot(player, order);
-                Bot::Player ep = Bot::SCARLET;
+            SECTION("all-lacks") {
+                SECTION("find player") {
+                    BotTest bot(player, order);
+                    Bot::Player ep = Bot::SCARLET;
 
-                REQUIRE_FALSE(bot.envelope.havePlayer);
+                    REQUIRE_FALSE(bot.envelope.havePlayer);
 
-                for (auto p : order)
-                    bot.notes[p][ep].lacks = true;
+                    for (auto p : order)
+                        bot.notes[p][ep].lacks = true;
 
-                REQUIRE(bot.findEnvelope());
-                REQUIRE(bot.envelope.havePlayer);
-                REQUIRE(bot.envelope.player == ep);
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.havePlayer);
+                    REQUIRE(bot.envelope.player == ep);
 
-                REQUIRE_FALSE(bot.findEnvelope());
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
+
+                SECTION("find weapon") {
+                    BotTest bot(player, order);
+                    Bot::Weapon ew = Bot::CANDLESTICK;
+
+                    REQUIRE_FALSE(bot.envelope.haveWeapon);
+
+                    for (auto p : order)
+                        bot.notes[p][ew].lacks = true;
+
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.haveWeapon);
+                    REQUIRE(bot.envelope.weapon == ew);
+
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
+
+                SECTION("find room") {
+                    BotTest bot(player, order);
+                    Bot::Room er = Bot::BEDROOM;
+
+                    REQUIRE_FALSE(bot.envelope.haveRoom);
+
+                    for (auto p : order)
+                        bot.notes[p][er].lacks = true;
+
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.haveRoom);
+                    REQUIRE(bot.envelope.room == er);
+
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
+
+                SECTION("one has") {
+                    BotTest bot(player, order);
+                    Bot::Player ep = Bot::SCARLET;
+
+                    for (auto p : order)
+                        bot.notes[p][ep].lacks = true;
+
+                    Bot::Player chosen = order[rand() % order.size()];
+                    bot.notes[chosen][ep].lacks = false;
+                    bot.notes[chosen][ep].has = true;
+
+                    REQUIRE_FALSE(bot.findEnvelope());
+                    REQUIRE_FALSE(bot.envelope.havePlayer);
+                }
             }
 
-            SECTION("find weapon") {
-                BotTest bot(player, order);
-                Bot::Weapon ew = Bot::CANDLESTICK;
+            SECTION("no-has") {
+                SECTION("find player") {
+                    BotTest bot(player, order);
+                    Bot::Player ep = Bot::SCARLET;
 
-                REQUIRE_FALSE(bot.envelope.haveWeapon);
+                    REQUIRE_FALSE(bot.envelope.havePlayer);
 
-                for (auto p : order)
-                    bot.notes[p][ew].lacks = true;
+                    for (int i = 0; i <= int(Bot::MAX_PLAYER); i++) {
+                        if (Bot::Player(i) == ep)
+                            continue;
+                        bot.notes[order[rand() % order.size()]][Bot::Player(i)].has = true;
+                    }
 
-                REQUIRE(bot.findEnvelope());
-                REQUIRE(bot.envelope.haveWeapon);
-                REQUIRE(bot.envelope.weapon == ew);
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.havePlayer);
+                    REQUIRE(bot.envelope.player == ep);
 
-                REQUIRE_FALSE(bot.findEnvelope());
-            }
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
 
-            SECTION("find room") {
-                BotTest bot(player, order);
-                Bot::Room er = Bot::BEDROOM;
+                SECTION("find weapon") {
+                    BotTest bot(player, order);
+                    Bot::Weapon ew = Bot::CANDLESTICK;
 
-                REQUIRE_FALSE(bot.envelope.haveRoom);
+                    REQUIRE_FALSE(bot.envelope.haveWeapon);
 
-                for (auto p : order)
-                    bot.notes[p][er].lacks = true;
+                    for (int i = 0; i <= int(Bot::MAX_WEAPON); i++) {
+                        if (Bot::Weapon(i) == ew)
+                            continue;
+                        bot.notes[order[rand() % order.size()]][Bot::Weapon(i)].has = true;
+                    }
 
-                REQUIRE(bot.findEnvelope());
-                REQUIRE(bot.envelope.haveRoom);
-                REQUIRE(bot.envelope.room == er);
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.haveWeapon);
+                    REQUIRE(bot.envelope.weapon == ew);
 
-                REQUIRE_FALSE(bot.findEnvelope());
-            }
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
 
-            SECTION("one has") {
-                BotTest bot(player, order);
-                Bot::Player ep = Bot::SCARLET;
+                SECTION("find room") {
+                    BotTest bot(player, order);
+                    Bot::Room er = Bot::BEDROOM;
 
-                for (auto p : order)
-                    bot.notes[p][ep].lacks = true;
+                    REQUIRE_FALSE(bot.envelope.haveRoom);
 
-                Bot::Player chosen = order[rand() % order.size()];
-                bot.notes[chosen][ep].lacks = false;
-                bot.notes[chosen][ep].has = true;
+                    for (int i = 0; i <= int(Bot::MAX_ROOM); i++) {
+                        if (Bot::Room(i) == er)
+                            continue;
+                        bot.notes[order[rand() % order.size()]][Bot::Room(i)].has = true;
+                    }
 
-                REQUIRE_FALSE(bot.findEnvelope());
-                REQUIRE_FALSE(bot.envelope.havePlayer);
+                    REQUIRE(bot.findEnvelope());
+                    REQUIRE(bot.envelope.haveRoom);
+                    REQUIRE(bot.envelope.room == er);
+
+                    REQUIRE_FALSE(bot.findEnvelope());
+                }
+
+                SECTION("multiple no-has") {
+                    BotTest bot(player, order);
+                    Bot::Player ep1 = Bot::SCARLET;
+                    Bot::Player ep2 = Bot::PLUM;
+
+                    REQUIRE_FALSE(bot.envelope.havePlayer);
+
+                    for (int i = 0; i <= int(Bot::MAX_PLAYER); i++) {
+                        if ((Bot::Player(i) == ep1) || (Bot::Player(i) == ep2))
+                            continue;
+                        bot.notes[order[rand() % order.size()]][Bot::Player(i)].has = true;
+                    }
+
+                    REQUIRE_FALSE(bot.findEnvelope());
+                    REQUIRE_FALSE(bot.envelope.havePlayer);
+                }
             }
         }
 

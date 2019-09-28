@@ -204,7 +204,6 @@ int Bot::getMove(int allowedMoves)
         occupied[p.second] = true;
 
     if (!envelope.haveRoom) {
-
     } else if (!envelope.havePlayer) {
     } else if (!envelope.haveWeapon) {
     } else {
@@ -293,6 +292,9 @@ bool Bot::findEnvelope()
 {
     Envelope env = envelope;
 
+    // for all the cards, first check if there is a card that everyone lacks. if it cannot find such
+    // a card, check if we know that everyone has all the cards except for one
+
     if (!envelope.havePlayer) {
         for (int i = 0; (i <= int(MAX_PLAYER)); i++) {
             bool found = false;
@@ -306,8 +308,39 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.player = Player(i);
                 envelope.havePlayer = true;
-                LOG_LOGIC("Deduced that " << envelope.player << " is the player in the envelope");
+                LOG_LOGIC("SOLVED: " << envelope.player << " is the envelope player (all-lacks)");
                 break;
+            }
+        }
+
+        if (!envelope.havePlayer) {
+            bool noHas = false;
+            Player noHasPlayer;
+
+            for (int i = 0; i <= int(MAX_PLAYER); i++) {
+                bool found = false;
+                for (auto player : order) {
+                    if (notes[player][Player(i)].has) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    // multiple cards hasn't been found
+                    if (noHas) {
+                        noHas = false;
+                        break;
+                    }
+                    noHas = true;
+                    noHasPlayer = Player(i);
+                }
+            }
+
+            if (noHas) {
+                envelope.player = noHasPlayer;
+                envelope.havePlayer = true;
+                LOG_LOGIC("SOLVED: " << envelope.player << " is the envelope player (no-has)");
             }
         }
     }
@@ -325,8 +358,39 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.weapon = Weapon(i);
                 envelope.haveWeapon = true;
-                LOG_LOGIC("Deduced that " << envelope.weapon << " is the weapon in the envelope");
+                LOG_LOGIC("SOLVED: " << envelope.weapon << " is the envelope weapon (all-lacks)");
                 break;
+            }
+        }
+
+        if (!envelope.haveWeapon) {
+            bool noHas = false;
+            Weapon noHasWeapon;
+
+            for (int i = 0; i <= int(MAX_WEAPON); i++) {
+                bool found = false;
+                for (auto player : order) {
+                    if (notes[player][Weapon(i)].has) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    // multiple cards hasn't been found
+                    if (noHas) {
+                        noHas = false;
+                        break;
+                    }
+                    noHas = true;
+                    noHasWeapon = Weapon(i);
+                }
+            }
+
+            if (noHas) {
+                envelope.weapon = noHasWeapon;
+                envelope.haveWeapon = true;
+                LOG_LOGIC("SOLVED: " << envelope.weapon << " is the envelope weapon (no-has)");
             }
         }
     }
@@ -344,8 +408,39 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.room = Room(i);
                 envelope.haveRoom = true;
-                LOG_LOGIC("Deduced that " << envelope.room << " is the room in the envelope");
+                LOG_LOGIC("SOLVED: " << envelope.room << " is the envelope room (all-lacks)");
                 break;
+            }
+        }
+
+        if (!envelope.haveRoom) {
+            bool noHas = false;
+            Room noHasRoom;
+
+            for (int i = 0; i <= int(MAX_ROOM); i++) {
+                bool found = false;
+                for (auto player : order) {
+                    if (notes[player][Room(i)].has) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    // multiple cards hasn't been found
+                    if (noHas) {
+                        noHas = false;
+                        break;
+                    }
+                    noHas = true;
+                    noHasRoom = Room(i);
+                }
+            }
+
+            if (noHas) {
+                envelope.room = noHasRoom;
+                envelope.haveRoom = true;
+                LOG_LOGIC("SOLVED: " << envelope.room << " is the envelope room (no-has)");
             }
         }
     }
@@ -407,14 +502,47 @@ Deck Bot::getWantedDeck()
 
 std::vector<Bot::Player> Bot::getSafePlayers()
 {
+    std::vector<Player> players;
+
+    for (int i = 0; i <= int(MAX_PLAYER); i++)
+        if (notes[player][Player(i)].has)
+            players.push_back(Player(i));
+
+    // also add envelope player?
+    /* if (envelope.havePlayer) */
+    /*     players.push_back(envelope.player); */
+
+    return players;
 }
 
 std::vector<Bot::Weapon> Bot::getSafeWeapons()
 {
+    std::vector<Weapon> weapons;
+
+    for (int i = 0; i <= int(MAX_WEAPON); i++)
+        if (notes[player][Weapon(i)].has)
+            weapons.push_back(Weapon(i));
+
+    // also add envelope weapon?
+    /* if (envelope.haveWeapon) */
+    /*     weapons.push_back(envelope.weapons); */
+
+    return weapons;
 }
 
 std::vector<Bot::Room> Bot::getSafeRooms()
 {
+    std::vector<Room> rooms;
+
+    for (int i = 0; i <= int(MAX_ROOM); i++)
+        if (notes[player][Room(i)].has)
+            rooms.push_back(Room(i));
+
+    // also add envelope room?
+    /* if (envelope.haveRoom) */
+    /*     rooms.push_back(envelope.room); */
+
+    return rooms;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
