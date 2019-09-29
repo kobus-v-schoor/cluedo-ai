@@ -3,6 +3,8 @@
  * \author Kobus van Schoor
  */
 
+#include <algorithm>
+
 #include "../include/bot.h"
 #include "../include/board.h"
 
@@ -207,19 +209,6 @@ int Bot::getMove(int allowedMoves)
         occupied[p.second] = true;
 
     if (!envelope.haveRoom) {
-        auto safePlayers = getSafePlayers();
-        auto safeWeapons = getSafeWeapons();
-
-        if (safePlayers.empty())
-            curSuggestion.player = deck.players[0];
-        else
-            curSuggestion.player = choosePlayerOffensive(safePlayers);
-
-        if (safeWeapons.empty())
-            curSuggestion.weapon = deck.weapons[0];
-        else
-            curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-
         // find room that we can get to with our allowedMoves
         size_t r = 0;
         Position start(board[this->player]);
@@ -234,6 +223,19 @@ int Bot::getMove(int allowedMoves)
             return start.path(getRoomPos(deck.rooms[0]), occupied, 1).partial(allowedMoves, occupied);
         } else { // we can get to one of the rooms
             curSuggestion.room = deck.rooms[r];
+            auto safePlayers = getSafePlayers();
+            auto safeWeapons = getSafeWeapons();
+
+            if (safePlayers.empty())
+                curSuggestion.player = deck.players[0];
+            else
+                curSuggestion.player = choosePlayerOffensive(safePlayers, curSuggestion.room);
+
+            if (safeWeapons.empty())
+                curSuggestion.weapon = deck.weapons[0];
+            else
+                curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+
             return getRoomPos(curSuggestion.room);
         }
     } else if (!envelope.havePlayer) {
@@ -591,9 +593,54 @@ int Bot::getRoomPos(Room room)
     return 0;
 }
 
-Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices)
+Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room room)
 {
-    return choices[rand() % choices.size()];
+    std::vector<Player> seen;
+
+    auto playerInChoices = [&](Player player) { return std::find(choices.begin(), choices.end(),
+            player) != choices.end(); };
+    auto playerInOrder = [&](Player player) { return std::find(order.begin(), order.end(),
+            player) != order.end(); };
+
+    bool found = false;
+    for (auto c : choices) {
+        if (playerInOrder(c)) {
+            found = true;
+            break;
+        }
+    }
+
+    // if there is not a player that is currently playing and one of our choices, we cannot make an
+    // offensive move and hence we can just return a random choice
+    if (!found)
+        return choices[rand() % choices.size()];
+
+    for (auto p : order)
+        if (notes[p][room].seen && playerInChoices(p))
+            seen.push_back(p);
+
+    // calculate the amount of rooms the player has possibly seen
+    std::map<Player, int> seenCount;
+
+    for (auto p : seen.empty() ? order : seen)
+        if (!seen.empty() || playerInChoices(p))
+            for (int i = 0; i <= int(MAX_ROOM); i++)
+                if (notes[p][Room(i)].seen)
+                    seenCount[p]++;
+
+    // if nobody has seen the room, return the player that has seen the least amount of rooms since
+    // they are probably the least likely to find the room envelope card by being in the room.
+    // if we have found somebody who has seen the room, find the player who has seen the most rooms
+    // and move them to the room since they will probably be moved away from their target and
+    // possibly hinder them in finding the envelope room
+    if (seen.empty())
+        return std::min_element(seenCount.begin(), seenCount.end(),
+                [](std::pair<Player, int> a, std::pair<Player, int> b) {
+                return a.second < b.second; })->first;
+    else
+        return std::max_element(seenCount.begin(), seenCount.end(),
+                [](std::pair<Player, int> a, std::pair<Player, int> b) {
+                return a.second < b.second; })->first;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)

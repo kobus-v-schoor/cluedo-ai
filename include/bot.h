@@ -489,8 +489,7 @@ namespace AI {
             /**
              * \brief Tries to choose a player that will be disadvantaged the most
              */
-            NOT_IMPLEMENTED
-            Player choosePlayerOffensive(std::vector<Player> choices);
+            Player choosePlayerOffensive(std::vector<Player> choices, Bot::Room room);
 
             /**
              * \brief The player this bot is playing as
