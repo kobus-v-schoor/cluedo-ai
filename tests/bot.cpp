@@ -159,6 +159,7 @@ TEST_CASE("Bot class", "[bot]") {
                 using Bot::notesMarkLacking;
                 using Bot::findEnvelope;
                 using Bot::getWantedDeck;
+                using Bot::getRoomPos;
 
                 using Bot::player;
                 using Bot::notes;
@@ -413,6 +414,20 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE(deck.rooms.empty());
             REQUIRE_THAT(deck.players, Equals(wantedPlayers));
             REQUIRE_THAT(deck.weapons, Equals(wantedWeapons));
+        }
+
+        SECTION("getRoomPos") {
+            BotTest bot(player, order);
+
+            REQUIRE(bot.getRoomPos(Bot::BEDROOM) == 4);
+            REQUIRE(bot.getRoomPos(Bot::BATHROOM) == 5);
+            REQUIRE(bot.getRoomPos(Bot::STUDY) == 6);
+            REQUIRE(bot.getRoomPos(Bot::KITCHEN) == 7);
+            REQUIRE(bot.getRoomPos(Bot::DINING_ROOM) == 8);
+            REQUIRE(bot.getRoomPos(Bot::LIVING_ROOM) == 9);
+            REQUIRE(bot.getRoomPos(Bot::COURTYARD) == 1);
+            REQUIRE(bot.getRoomPos(Bot::GARAGE) == 2);
+            REQUIRE(bot.getRoomPos(Bot::GAMES_ROOM) == 3);
         }
     }
 }

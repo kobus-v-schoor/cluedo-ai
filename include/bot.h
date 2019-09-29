@@ -484,7 +484,6 @@ namespace AI {
             /**
              * \brief Returns the integer position where a room is located
              */
-            NOT_IMPLEMENTED
             int getRoomPos(Room room);
 
             /**

@@ -1,6 +1,6 @@
 ifeq ($(wildcard last_build),)
  ifndef gf
-  gf = -std=c++11 -g -Wall -DTESTING
+  gf = -std=c++11 -g -Wall
  endif
  ifndef go
   go = g++ -c $(gf)
@@ -8,7 +8,7 @@ ifeq ($(wildcard last_build),)
 else
  ifeq ($(shell cat last_build),debug)
   ifndef gf
-   gf = -std=c++11 -g -Wall -DTESTING
+   gf = -std=c++11 -g -Wall
   endif
   ifndef go
    go = g++ -c $(gf)
@@ -34,7 +34,7 @@ auto: | last_build
 	fi
 
 debug: | last_build
-	export gf="-std=c++11 -g -Wall -DTESTING"; \
+	export gf="-std=c++11 -g -Wall"; \
 	export go="g++ -c $$gf"; \
 	[[ $$(cat last_build) != debug ]] && $(MAKE) clean; \
 	echo debug > last_build; \

@@ -576,6 +576,18 @@ std::vector<Bot::Room> Bot::getSafeRooms()
 
 int Bot::getRoomPos(Room room)
 {
+    switch (room) {
+        case BEDROOM: return 4;
+        case BATHROOM: return 5;
+        case STUDY: return 6;
+        case KITCHEN: return 7;
+        case DINING_ROOM: return 8;
+        case LIVING_ROOM: return 9;
+        case COURTYARD: return 1;
+        case GARAGE: return 2;
+        case GAMES_ROOM: return 3;
+    }
+
     return 0;
 }
 
