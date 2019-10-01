@@ -6,6 +6,7 @@
 
 using namespace AI;
 using Catch::Matchers::Equals;
+using Catch::Matchers::VectorContains;
 
 template <typename T>
 bool contains(std::vector<T> vec, T obj)
@@ -160,6 +161,7 @@ TEST_CASE("Bot class", "[bot]") {
                 using Bot::findEnvelope;
                 using Bot::getWantedDeck;
                 using Bot::getRoomPos;
+                using Bot::choosePlayerOffensive;
 
                 using Bot::player;
                 using Bot::notes;
@@ -428,6 +430,56 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE(bot.getRoomPos(Bot::COURTYARD) == 1);
             REQUIRE(bot.getRoomPos(Bot::GARAGE) == 2);
             REQUIRE(bot.getRoomPos(Bot::GAMES_ROOM) == 3);
+        }
+
+        SECTION("choosePlayerOffensive") {
+            SECTION("no overlap") {
+                std::vector<Bot::Player> choices = { Bot::MUSTARD, Bot::WHITE };
+                BotTest bot(player, order);
+
+                for (auto c : choices)
+                    REQUIRE_FALSE(contains(order, c));
+
+                // just make sure that returned player is always in choices, player doesn't matter
+                // since output is random it is tested multiple times
+                for (int i = 0; i < 10; i++)
+                    REQUIRE_THAT(choices, VectorContains(bot.choosePlayerOffensive(choices,
+                                    randEnum(Bot::MAX_ROOM))));
+            }
+
+            SECTION("no seen") {
+                std::vector<Bot::Player> choices = { Bot::SCARLET, Bot::PLUM, Bot::PEACOCK };
+                BotTest bot(player, order);
+
+                Bot::Player min = choices[0];
+                for (auto c : choices) {
+                    for (int i = 0; i < int(c); i++)
+                        bot.notes[c][Bot::Room(i)].seen = true;
+                    if (int(c) < min)
+                        min = c;
+                }
+
+                REQUIRE(bot.choosePlayerOffensive(choices, Bot::MAX_ROOM) == min);
+            }
+
+            SECTION("some seen") {
+                std::vector<Bot::Player> choices = { Bot::SCARLET, Bot::PLUM, Bot::PEACOCK };
+                BotTest bot(player, order);
+
+                Bot::Player max = choices[0];
+                for (size_t j = 0; j < choices.size(); j++) {
+                    Bot::Player c = choices[j];
+                    for (int i = 0; i < int(c); i++)
+                        bot.notes[c][Bot::Room(i)].seen = true;
+                    if (j + 1 < choices.size()) {
+                        bot.notes[c][Bot::MAX_ROOM].seen = true;
+                        if (int(c) > max)
+                            max = c;
+                    }
+                }
+
+                REQUIRE(bot.choosePlayerOffensive(choices, Bot::MAX_ROOM) == max);
+            }
         }
     }
 }

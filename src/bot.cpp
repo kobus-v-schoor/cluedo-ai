@@ -622,11 +622,14 @@ Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room ro
     // calculate the amount of rooms the player has possibly seen
     std::map<Player, int> seenCount;
 
-    for (auto p : seen.empty() ? order : seen)
-        if (!seen.empty() || playerInChoices(p))
+    for (auto p : seen.empty() ? order : seen) {
+        if (!seen.empty() || playerInChoices(p)) {
+            seenCount[p] = 0;
             for (int i = 0; i <= int(MAX_ROOM); i++)
                 if (notes[p][Room(i)].seen)
                     seenCount[p]++;
+        }
+    }
 
     // if nobody has seen the room, return the player that has seen the least amount of rooms since
     // they are probably the least likely to find the room envelope card by being in the room.
