@@ -142,8 +142,8 @@ void Position::shortestPath(SPInfo& info, int turns)
             info.spMap[ngh] = p;
         }
 
-        // skip occupied tile
-        if (info.occupied[ngh])
+        // skip occupied tile if it's not a room
+        if (info.occupied[ngh] && (ngh >= Board::ROOM_COUNT))
             continue;
 
         // destination found, return

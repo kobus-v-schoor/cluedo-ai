@@ -174,14 +174,23 @@ TEST_CASE("Position class", "[position]") {
         SECTION("occupied tiles") {
             std::vector<bool> occupied(Board::BOARD_SIZE, false);
 
-            occupied[26] = true;
-            // go around occupied tile
-            REQUIRE(int(Position(25).path(27, occupied)) == 4);
-            validatePath(Position(25).path(27, occupied), occupied);
+            SECTION("go around occupied tile") {
+                occupied[26] = true;
+                // go around occupied tile
+                REQUIRE(int(Position(25).path(27, occupied)) == 4);
+                validatePath(Position(25).path(27, occupied), occupied);
+            }
 
-            occupied[33] = true;
-            occupied[44] = true;
-            REQUIRE_THROWS_AS(Position(43).path(34, occupied), std::runtime_error&);
+            SECTION("check blocked off access") {
+                occupied[33] = true;
+                occupied[44] = true;
+                REQUIRE_THROWS_AS(Position(43).path(34, occupied), std::runtime_error&);
+            }
+
+            SECTION("occupied rooms") {
+                occupied[7] = true;
+                REQUIRE(int(Position(10).path(8, occupied, 2)) == 1);
+            }
         }
     }
 }
