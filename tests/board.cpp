@@ -27,6 +27,7 @@ TEST_CASE("board namespace", "[board]") {
     REQUIRE_THAT(board[0], VectorContains(36));
     REQUIRE_THAT(board[7], VectorContains(8));
     REQUIRE_THAT(board[9], VectorContains(13));
+    REQUIRE_THAT(board[4], VectorContains(74));
 
     // secret passages
     REQUIRE_THAT(board[7], VectorContains(2));

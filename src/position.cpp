@@ -48,7 +48,8 @@ int Position::Path::partial(int moves)
     Path par(path[0]);
     size_t pos = 1;
 
-    while ((pos < path.size()) && (par.dist() < moves) && (par.path.back() >= Board::ROOM_COUNT))
+    while ((pos < path.size()) && (par.dist() < moves) &&
+            ((par.path.back() >= Board::ROOM_COUNT) || (par.path.size() == 1)))
         par.path.push_back(path[pos++]);
 
     return par.path.back();

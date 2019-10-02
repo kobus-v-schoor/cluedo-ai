@@ -14,6 +14,23 @@ bool contains(std::vector<T> vec, T obj)
     return std::find(vec.begin(), vec.end(), obj) != vec.end();
 }
 
+Bot::Room posToRoom(int pos)
+{
+    switch (pos) {
+        case 1: return Bot::COURTYARD;
+        case 2: return Bot::GARAGE;
+        case 3: return Bot::GAMES_ROOM;
+        case 4: return Bot::BEDROOM;
+        case 5: return Bot::BATHROOM;
+        case 6: return Bot::STUDY;
+        case 7: return Bot::KITCHEN;
+        case 8: return Bot::DINING_ROOM;
+        case 9: return Bot::LIVING_ROOM;
+    };
+
+    return Bot::COURTYARD;
+}
+
 TEST_CASE("Suggestion struct", "[suggestion]") {
     auto p = randEnum(Bot::MAX_PLAYER);
     auto w = randEnum(Bot::MAX_WEAPON);
@@ -137,6 +154,84 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE(notes[other][card].has);
     }
 
+    SECTION("getMove and getSuggestion") {
+        Bot::Player player = Bot::SCARLET;
+        std::vector<Bot::Player> order = { Bot::Player::SCARLET, Bot::Player::PLUM,
+            Bot::Player::PEACOCK , Bot::Player::GREEN };
+
+        SECTION("incorrect use") {
+            Bot bot(player, order);
+            REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+        }
+
+        SECTION("room") {
+            Bot bot(player, order);
+            std::vector<Bot::Room> wanted = { Bot::DINING_ROOM, Bot::LIVING_ROOM, Bot::COURTYARD };
+
+            bot.updateBoard({
+                    { Bot::SCARLET, 30 },
+                    { Bot::PLUM, 26 },
+                    { Bot::PEACOCK, 27 },
+                    { Bot::GREEN, 28}
+                    });
+
+            bot.setCards({ Bot::CANDLESTICK, Bot::SCARLET });
+
+            for (int i = 0; i <= Bot::MAX_ROOM; i++)
+                if (!contains(wanted, Bot::Room(i)))
+                    bot.showCard(order[(rand() % (order.size() - 1)) + 1], Bot::Room(i));
+
+            int roomPos = bot.getMove(12);
+            Bot::Room room = posToRoom(roomPos);
+            REQUIRE_THAT(wanted, VectorContains(room));
+
+            Bot::Suggestion sug(Bot::MAX_PLAYER, Bot::MAX_WEAPON, Bot::MAX_ROOM);
+
+            REQUIRE_NOTHROW(sug = bot.getSuggestion());
+            REQUIRE(sug.player == Bot::SCARLET);
+            REQUIRE(sug.weapon == Bot::CANDLESTICK);
+            REQUIRE(sug.room == room);
+
+            SECTION("can't reach") {
+                int closest = 9; // living room
+                Position::Path path = Position(30).path(closest);
+                int newPos = bot.getMove(2);
+
+                REQUIRE(Position(30).path(newPos) == 2);
+                REQUIRE_THAT(Position(30).path(closest).getPath(), VectorContains(newPos));
+                REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+
+            SECTION("completely blocked") {
+                bot.updateBoard({
+                        { Bot::SCARLET, 3 },
+                        { Bot::PLUM, 78 }
+                        });
+                REQUIRE(bot.getMove(12) == 3);
+                REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+
+            SECTION("passage through room") {
+                bot.setCards({ Bot::LIVING_ROOM });
+                bot.updateBoard({
+                        { Bot::SCARLET, 4 },
+                        { Bot::PLUM, 74 }
+                        });
+                REQUIRE(bot.getMove(12) == 9);
+                sug = bot.getSuggestion();
+                REQUIRE(sug.room == Bot::LIVING_ROOM);
+                REQUIRE(sug.weapon != Bot::CANDLESTICK);
+                REQUIRE(sug.player != Bot::SCARLET);
+            }
+        }
+
+        SECTION("player");
+
+        SECTION("weapon");
+
+        SECTION("accusation");
+    }
+
     /**
      * This section is specifically intended to test private functionality of the Bot class that
      * would otherwise be very difficult to consistently test only through the Bot class' public
@@ -161,6 +256,7 @@ TEST_CASE("Bot class", "[bot]") {
                 using Bot::findEnvelope;
                 using Bot::getWantedDeck;
                 using Bot::getRoomPos;
+                using Bot::getPosRoom;
                 using Bot::choosePlayerOffensive;
 
                 using Bot::player;
@@ -430,6 +526,20 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE(bot.getRoomPos(Bot::COURTYARD) == 1);
             REQUIRE(bot.getRoomPos(Bot::GARAGE) == 2);
             REQUIRE(bot.getRoomPos(Bot::GAMES_ROOM) == 3);
+        }
+
+        SECTION("getPosRoom") {
+            BotTest bot(player, order);
+
+            REQUIRE(bot.getPosRoom(1) == Bot::COURTYARD);
+            REQUIRE(bot.getPosRoom(2) == Bot::GARAGE);
+            REQUIRE(bot.getPosRoom(3) == Bot::GAMES_ROOM);
+            REQUIRE(bot.getPosRoom(4) == Bot::BEDROOM);
+            REQUIRE(bot.getPosRoom(5) == Bot::BATHROOM);
+            REQUIRE(bot.getPosRoom(6) == Bot::STUDY);
+            REQUIRE(bot.getPosRoom(7) == Bot::KITCHEN);
+            REQUIRE(bot.getPosRoom(8) == Bot::DINING_ROOM);
+            REQUIRE(bot.getPosRoom(9) == Bot::LIVING_ROOM);
         }
 
         SECTION("choosePlayerOffensive") {

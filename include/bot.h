@@ -289,6 +289,11 @@ namespace AI {
              *
              * This should be used when the AI gets initialized either at the beginning of the game
              * or when an AI player replaces a human player
+             *
+             * \param players should contain the position of every player on the board
+             * \warning Do not use this without passing through the position of all the players in
+             * the board. This overwrites the positions of all the players. To move just a single
+             * player use movePlayer() instead.
              */
             void updateBoard(std::vector<std::pair<Player, Position>> players);
 
@@ -337,7 +342,6 @@ namespace AI {
              * \param allowedMoves the amount of moves that the AI can make (i.e. dice roll count)
              * \returns the position where the AI wants to move
              */
-            NOT_IMPLEMENTED
             int getMove(int allowedMoves);
 
             /**
@@ -346,9 +350,12 @@ namespace AI {
              * This can be used to get a suggestion from the AI. If the AI is currently located in
              * the center room it can be assumed that the suggestion is in fact an accusation.
              *
+             * \throw std::runtime_error if called before calling getMove() or if called when
+             * getMove() returned a position outside of a room
+             * \warning You need to call getMove() before calling this otherwise an exception will
+             * be thrown
              * \returns the suggestion made by the AI. An accusation if the AI is in the center room.
              */
-            NOT_IMPLEMENTED
             Suggestion getSuggestion();
 
             /**
@@ -363,7 +370,6 @@ namespace AI {
              * \brief Used to tell the bot that no player was able to show a card after it made a
              * suggestion
              */
-            NOT_IMPLEMENTED
             void noShowCard();
 
             /**
@@ -487,6 +493,11 @@ namespace AI {
             int getRoomPos(Room room);
 
             /**
+             * \brief Converts integer position to Room enum
+             */
+            Room getPosRoom(int pos);
+
+            /**
              * \brief Tries to choose a player that will be disadvantaged the most
              */
             Player choosePlayerOffensive(std::vector<Player> choices, Bot::Room room);
@@ -537,6 +548,16 @@ namespace AI {
              * \brief Temporarily holds the suggestion the bot is planning to make
              */
             Suggestion curSuggestion;
+
+            /**
+             * \brief Used to mark that curSuggestion has been set to a valid value
+             */
+            bool haveSuggestion = false;
+
+            /**
+             * \brief Used to mark that a suggestion has been made
+             */
+            bool weMadeSuggestion = false;
     };
 }
 

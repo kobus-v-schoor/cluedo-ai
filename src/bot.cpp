@@ -199,6 +199,8 @@ void Bot::noOtherShownCard()
 
 int Bot::getMove(int allowedMoves)
 {
+    haveSuggestion = true;
+    weMadeSuggestion = false;
     Deck deck = getWantedDeck();
     runPredictors(deck);
 
@@ -209,20 +211,95 @@ int Bot::getMove(int allowedMoves)
         occupied[p.second] = true;
 
     if (!envelope.haveRoom) {
-        // find room that we can get to with our allowedMoves
-        size_t r = 0;
         Position start(board[this->player]);
-        while ((start.path(getRoomPos(deck.rooms[r]), occupied, 1) > allowedMoves) &&
-                (r < deck.rooms.size()))
-            r++;
+        LOG_LOGIC("Trying to move to find room from position " << int(start));
+        size_t roomIndex = 0;
+        int dist = allowedMoves + 1;
+        bool blocked = true;
+
+        while ((roomIndex < deck.rooms.size()) && (dist > allowedMoves)) {
+            bool thrown = false;
+            try {
+                dist = start.path(getRoomPos(deck.rooms[roomIndex]), occupied, 1);
+            } catch (std::runtime_error&) { // we're stuck due to other players blocking us
+                dist = allowedMoves + 1;
+                thrown = true;
+            }
+            roomIndex++;
+            if (!thrown)
+                blocked = false;
+        }
 
         // couldn't find a room we can get to
-        if (r == deck.rooms.size()) {
-            // get as near as possible to the highest prob room
-            curSuggestion.room = deck.rooms[0];
-            return start.path(getRoomPos(deck.rooms[0]), occupied, 1).partial(allowedMoves, occupied);
+        if (roomIndex == deck.rooms.size()) {
+            LOG_LOGIC("Couldn't get to any of the rooms that we're interested in");
+            if (blocked) { // we are blocked for all possible routes to our wanted rooms
+                // check if we can go through a room
+                bool all = false;
+                try {
+                    start.path(getRoomPos(deck.rooms[0]), occupied, Board::ROOM_COUNT);
+                } catch (std::runtime_error&) {
+                    all = true; // everything is blocked
+                }
+
+                if (all) { // we're completely stuck, so just stay were we are
+                    LOG_LOGIC("All pathways are blocked, staying in current position");
+                    haveSuggestion = false;
+                    return board[this->player];
+                } else { // go through another room
+                    int dest = start.path(getRoomPos(deck.rooms[0]), occupied,
+                            Board::ROOM_COUNT).partial(allowedMoves);
+                    // we already know about this room since it wasn't part of our deck, so try and
+                    // make the best of it and make a useful accusation
+                    curSuggestion.room = getPosRoom(dest);
+
+                    auto safePlayers = getSafePlayers();
+                    auto safeWeapons = getSafeWeapons();
+
+                    // we already have the player and weapon, so just try and annoy another player
+                    if (deck.players.empty() && deck.weapons.empty()) {
+                        curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
+                        curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+                    } else if (deck.players.empty()) { // we already know the player
+                        curSuggestion.player = choosePlayerOffensive(safePlayers, curSuggestion.room);
+                        curSuggestion.weapon = deck.weapons[0];
+                    } else if (deck.weapons.empty()) { // we already know the weapon
+                        curSuggestion.player = deck.players[0];
+                        curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+                    } else { // we don't know the player or the weapon
+                        curSuggestion.player = deck.players[0];
+                        curSuggestion.weapon = deck.weapons[0];
+                    }
+
+                    LOG_LOGIC("Can move through " << curSuggestion.room << " to get around blockage");
+                    return getRoomPos(curSuggestion.room);
+                }
+            } else {
+                // we couldn't get to any of the rooms due to too low dice roll
+
+                Position::Path minPath(0);
+                Position::Path curPath(0);
+
+                // find the closest room
+                for (auto room : deck.rooms) {
+                    try {
+                        curPath = start.path(getRoomPos(room), occupied, 1);
+                    } catch (std::runtime_error&) {
+                        continue;
+                    }
+
+                    if ((curPath < minPath) || (minPath == 0))
+                        minPath = curPath;
+                }
+
+                LOG_LOGIC("Too low diceroll, attempting to get as close as possible to " <<
+                        getPosRoom(minPath.getPath().back()));
+                haveSuggestion = false;
+                return minPath.partial(allowedMoves);
+            }
         } else { // we can get to one of the rooms
-            curSuggestion.room = deck.rooms[r];
+            curSuggestion.room = deck.rooms[roomIndex];
+            LOG_LOGIC("We can get to " << curSuggestion.room << ", asking to move there");
             auto safePlayers = getSafePlayers();
             auto safeWeapons = getSafeWeapons();
 
@@ -244,24 +321,43 @@ int Bot::getMove(int allowedMoves)
         Position dest(0);
         Position cur(board[player]);
         Position::Path path = cur.path(dest, occupied, 1);
-        return path.partial(allowedMoves, occupied);
+        return path.partial(allowedMoves);
     }
 
     return 0;
 }
 
-Bot::Suggestion Bot::getSuggestion(){ return Suggestion(Player(0),Weapon(0),Room(0)); }
+Bot::Suggestion Bot::getSuggestion()
+{
+    if (!haveSuggestion)
+        throw std::runtime_error("Suggestion hasn't been set because getMove wasn't called before "
+                "getSuggestion() or we're currently outside of a room");
+    LOG_LOGIC("Making suggestion " << curSuggestion);
+    haveSuggestion = false;
+    weMadeSuggestion = true;
+    return curSuggestion;
+}
 
 void Bot::showCard(Player player, Card card)
 {
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
+    if (weMadeSuggestion) {
+        log.addSuggestion(this->player, curSuggestion);
+        log.addShow(player);
+        weMadeSuggestion = false;
+    }
     notesHook();
 }
 
 void Bot::noShowCard()
 {
-    //runDeductors();
+    if (weMadeSuggestion) {
+        log.addSuggestion(this->player, curSuggestion);
+        log.addNoShow();
+        notesHook(true);
+        weMadeSuggestion = false;
+    }
 }
 
 Bot::Card Bot::getCard(Player player, std::vector<Card> cards){ return Card(Player(0)); }
@@ -593,6 +689,23 @@ int Bot::getRoomPos(Room room)
     return 0;
 }
 
+Bot::Room Bot::getPosRoom(int pos)
+{
+    switch (pos) {
+        case 1: return COURTYARD;
+        case 2: return GARAGE;
+        case 3: return GAMES_ROOM;
+        case 4: return BEDROOM;
+        case 5: return BATHROOM;
+        case 6: return STUDY;
+        case 7: return KITCHEN;
+        case 8: return DINING_ROOM;
+        case 9: return LIVING_ROOM;
+    }
+
+    return COURTYARD;
+}
+
 Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room room)
 {
     std::vector<Player> seen;
@@ -705,7 +818,7 @@ std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Card card)
 std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion)
 {
     ostream << "(P: " << suggestion.player << ", W: " << suggestion.weapon << ", R: " <<
-        suggestion.room;
+        suggestion.room << ")";
     return ostream;
 }
 

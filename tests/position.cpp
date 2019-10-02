@@ -59,6 +59,16 @@ TEST_CASE("Path struct", "[path]") {
 
             REQUIRE(path.partial(4) == 7);
         }
+
+        SECTION("from room to room") {
+            Position::Path path(4);
+            path.append(9);
+            path.append(13);
+            path.append(23);
+            path.append(30);
+
+            REQUIRE(path.partial(2) == 9);
+        }
     }
 }
 
