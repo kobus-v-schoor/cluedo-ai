@@ -504,7 +504,6 @@ namespace AI {
              * \param wanted list of prefered rooms sorted by preference
              * \returns the integer position for the next move
              */
-            NOT_IMPLEMENTED
             int findNextMove(int allowedMoves, std::vector<Room> wanted);
 
             /**

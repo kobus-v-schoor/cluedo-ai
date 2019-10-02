@@ -718,7 +718,112 @@ Bot::Room Bot::getPosRoom(int pos)
 
 int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
 {
-    return 0;
+    std::vector<std::pair<Room, Position::Path>> dists;
+    Position start(board[this->player]);
+
+    std::vector<bool> occupied(Board::BOARD_SIZE, false);
+    for (auto p : board)
+        occupied[p.second] = true;
+
+    for (auto w : wanted) {
+        try {
+            Position::Path path = start.path(getRoomPos(w), occupied, 1);
+            dists.push_back({ w, path });
+        } catch (std::runtime_error&) {}; // blocked
+    }
+
+    if (dists.empty()) { // everything was blocked in some way
+        // first check if we can move at all
+        bool fenced = true;
+        for (auto n : start.getNeighbours()) {
+            if (occupied[n])
+                continue;
+            fenced = false;
+            break;
+        }
+
+        if (fenced) // we're completely stuck, so just stay here
+            return board[this->player];
+
+        // check if there is any room that we can get into
+        std::vector<int> unwantedRooms;
+        for (int i = 1; i < Board::ROOM_COUNT; i++) {
+            int dist;
+            try {
+                dist = start.path(i, occupied, 1);
+            } catch (std::runtime_error&) {
+                continue;
+            }
+
+            if (dist <= allowedMoves)
+                unwantedRooms.push_back(i);
+        }
+
+        if (unwantedRooms.empty()) { // we cannot reach anything
+            // move towards the closest wanted room
+            for (auto w : wanted)
+                dists.push_back({ w, start.path(getRoomPos(w), {}, 1)});
+
+            int min = 0;
+            for (size_t i = 1; i < dists.size(); i++)
+                if (dists[i].second < dists[min].second)
+                    min = i;
+
+            auto path = dists[min].second.getPath();
+            Position::Path newPath(*path.begin());
+
+            for (size_t i = 1; i < path.size(); i++) {
+                if (occupied[path[i]])
+                    break;
+                newPath.append(path[i]);
+            }
+
+            return newPath.partial(allowedMoves);
+        } else { // we can reach at least one unwanted room
+            // move towards the unwanted room with the closest wanted room
+
+            // <room pos, <wanted pos, wanted dist>>
+            std::map<int, std::pair<int, int>> unwantedDistance;
+            for (auto r : unwantedRooms) {
+                std::map<int, int> wantedDistance;
+
+                for (auto w : wanted) {
+                    int p = getRoomPos(w);
+                    wantedDistance[p] = Position(r).path(p, {}, 1);
+                }
+
+                int min = wantedDistance.begin()->first;
+                for (auto w : wantedDistance)
+                    if (w.second < wantedDistance[min])
+                        min = w.first;
+
+                unwantedDistance[r] = { min, wantedDistance[min] };
+            }
+
+            int min = unwantedDistance.begin()->first;
+            for (auto u : unwantedDistance)
+                if (u.second.second < unwantedDistance[min].second)
+                    min = u.first;
+
+            return min;
+        }
+    } else { // some of the rooms were unblocked
+        // first check if we can reach any of the rooms, if we can - go there
+        for (auto d : dists)
+            if (d.second <= allowedMoves)
+                return getRoomPos(d.first);
+
+        // TODO: possibly optimize this logic by rather going for the highest pref probable (total
+        // moves needed is less than average throw)
+
+        // no rooms were found that was in reach, go to the closest room regardless of preference
+        int roomIndex = 0;
+        for (size_t i = 1; i < dists.size(); i++)
+            if (dists[i].second < dists[roomIndex].second)
+                roomIndex = i;
+
+        return dists[roomIndex].second.partial(allowedMoves);
+    }
 }
 
 Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room room)
