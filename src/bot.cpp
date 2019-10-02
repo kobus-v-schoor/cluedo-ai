@@ -21,6 +21,13 @@
 
 using namespace AI;
 
+// checks if a vector contains an object
+template <typename T>
+bool contains(std::vector<T>& vec, T obj)
+{
+    return std::find(vec.begin(), vec.end(), obj) != vec.end();
+}
+
 Bot::Card::Card(Bot::Player p):
     card(int(p)),
     type(Card::Type::PLAYER)
@@ -199,25 +206,57 @@ void Bot::noOtherShownCard()
 
 int Bot::getMove(int allowedMoves)
 {
-    haveSuggestion = true;
-    weMadeSuggestion = false;
     Deck deck = getWantedDeck();
     runPredictors(deck);
 
     deck.sort();
 
-    std::vector<bool> occupied(Board::BOARD_SIZE, false);
-    for (auto p : board)
-        occupied[p.second] = true;
+    auto safePlayers = getSafePlayers();
+    auto safeWeapons = getSafeWeapons();
+    auto safeRooms = getSafeRooms();
+
+    auto forcedRoom = [&](Room room) {
+        if (deck.players.empty() && deck.weapons.empty()) { // we know both, annoy a player
+            curSuggestion.player = choosePlayerOffensive(order, room);
+            curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
+        } else if (deck.players.empty()) { // we know the player, choose a good weapon
+            curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+            curSuggestion.weapon = deck.weapons[0];
+        } else if (deck.weapons.empty()) { // we know the weapon, choose a good player
+            curSuggestion.player = deck.players[0];
+            curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+        } else { // we don't anything, choose good player and weapon
+            curSuggestion.player = deck.players[0];
+            curSuggestion.weapon = deck.weapons[0];
+        }
+    };
 
     if (!envelope.haveRoom) {
+        int pos = findNextMove(allowedMoves, deck.rooms);
+
+        if (pos <= Board::ROOM_COUNT) { // we're entering a room
+            Room room = getPosRoom(pos);
+            curSuggestion.room = room;
+            haveSuggestion = true;
+            if (contains(deck.rooms, room)) { // we're entering a wanted room
+                if (safePlayers.empty())
+                    curSuggestion.player = deck.players[0];
+                else
+                    curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+
+                if (safeWeapons.empty())
+                    curSuggestion.weapon = deck.weapons[0];
+                else
+                    curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+            } else // we're entering an unwanted room
+                forcedRoom(room);
+        } else // we're going/staying to a tile
+            haveSuggestion = false;
+
+        return pos;
     } else if (!envelope.havePlayer) {
     } else if (!envelope.haveWeapon) {
     } else {
-        Position dest(0);
-        Position cur(board[player]);
-        Position::Path path = cur.path(dest, occupied, 1);
-        return path.partial(allowedMoves);
     }
 
     return 0;
@@ -602,18 +641,18 @@ Bot::Room Bot::getPosRoom(int pos)
     return COURTYARD;
 }
 
+int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
+{
+    return 0;
+}
+
 Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room room)
 {
     std::vector<Player> seen;
 
-    auto playerInChoices = [&](Player player) { return std::find(choices.begin(), choices.end(),
-            player) != choices.end(); };
-    auto playerInOrder = [&](Player player) { return std::find(order.begin(), order.end(),
-            player) != order.end(); };
-
     bool found = false;
     for (auto c : choices) {
-        if (playerInOrder(c)) {
+        if (contains(order, c)) {
             found = true;
             break;
         }
@@ -625,14 +664,14 @@ Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room ro
         return choices[rand() % choices.size()];
 
     for (auto p : order)
-        if (notes[p][room].seen && playerInChoices(p))
+        if (notes[p][room].seen && contains(choices, p))
             seen.push_back(p);
 
     // calculate the amount of rooms the player has possibly seen
     std::map<Player, int> seenCount;
 
     for (auto p : seen.empty() ? order : seen) {
-        if (!seen.empty() || playerInChoices(p)) {
+        if (!seen.empty() || contains(choices, p)) {
             seenCount[p] = 0;
             for (int i = 0; i <= int(MAX_ROOM); i++)
                 if (notes[p][Room(i)].seen)

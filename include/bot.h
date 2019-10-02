@@ -498,6 +498,16 @@ namespace AI {
             Room getPosRoom(int pos);
 
             /**
+             * \brief Tries to find the optimal position for the next move based the list of wanted
+             * rooms
+             * \param allowedMoves amount of moves player is allowed to make
+             * \param wanted list of prefered rooms sorted by preference
+             * \returns the integer position for the next move
+             */
+            NOT_IMPLEMENTED
+            int findNextMove(int allowedMoves, std::vector<Room> wanted);
+
+            /**
              * \brief Tries to choose a player that will be disadvantaged the most
              */
             Player choosePlayerOffensive(std::vector<Player> choices, Bot::Room room);

@@ -198,6 +198,7 @@ TEST_CASE("Bot class", "[bot]") {
                 using Bot::getWantedDeck;
                 using Bot::getRoomPos;
                 using Bot::getPosRoom;
+                using Bot::findNextMove;
                 using Bot::choosePlayerOffensive;
 
                 using Bot::player;
@@ -481,6 +482,9 @@ TEST_CASE("Bot class", "[bot]") {
             REQUIRE(bot.getPosRoom(7) == Bot::KITCHEN);
             REQUIRE(bot.getPosRoom(8) == Bot::DINING_ROOM);
             REQUIRE(bot.getPosRoom(9) == Bot::LIVING_ROOM);
+        }
+
+        SECTION("findNextMove") {
         }
 
         SECTION("choosePlayerOffensive") {
