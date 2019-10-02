@@ -234,10 +234,11 @@ int Bot::getMove(int allowedMoves)
     if (!envelope.haveRoom) {
         int pos = findNextMove(allowedMoves, deck.rooms);
 
-        if (pos <= Board::ROOM_COUNT) { // we're entering a room
+        if (pos < Board::ROOM_COUNT) { // we're entering a room
             Room room = getPosRoom(pos);
             curSuggestion.room = room;
             haveSuggestion = true;
+
             if (contains(deck.rooms, room)) { // we're entering a wanted room
                 if (safePlayers.empty())
                     curSuggestion.player = deck.players[0];
@@ -254,8 +255,43 @@ int Bot::getMove(int allowedMoves)
             haveSuggestion = false;
 
         return pos;
-    } else if (!envelope.havePlayer) {
-    } else if (!envelope.haveWeapon) {
+    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
+        int pos = findNextMove(allowedMoves, safeRooms);
+        int dest = board[this->player];
+
+        // if we are already in a safe room, only change if the new destination is also a safe room
+        if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
+                        getPosRoom(board[this->player]))) {
+            if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos)))
+                dest = pos;
+        } else // we're not currently in a safe room, go to new destination
+            dest = pos;
+
+        if (dest >= Board::ROOM_COUNT) { // new destination isn't a room
+            haveSuggestion = false;
+        } else {
+            Room room = getPosRoom(dest);
+            curSuggestion.room = room;
+            haveSuggestion = true;
+
+            // new room is a safe room, we can isolate our wanted card
+            if (contains(safeRooms, room)) {
+                if (!envelope.havePlayer) { // we're looking for a player
+                    curSuggestion.player = deck.players[0];
+
+                    if (safeWeapons.empty())
+                        curSuggestion.weapon = deck.weapons[0];
+                    else
+                        curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+                } else { // we're looking for a weapon
+                    curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+                    curSuggestion.weapon = deck.weapons[0];
+                }
+            } else // we're entering an unwanted room
+                forcedRoom(room);
+        }
+
+        return dest;
     } else {
     }
 
