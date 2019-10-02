@@ -65,14 +65,14 @@ namespace AI {
 
                     /**
                      * \brief Returns up to where in the path you can get in the moves given
+                     *
+                     * This assumes that the path must be followed in one turn only. So, if a room
+                     * is encountered along the path, the path stops there.
+                     *
                      * \param moves the amount of moves allowed
-                     * \param occupied the positions on the board that are occupied
                      * \returns the position in the path where you can get with the moves given
-                     * \warning this will _not_ take in to account multi-room logic - it is assumed
-                     * the path can be followed in one turn.
-                     * \throw std::invalid_argument if the occupied vector is of incorrect size
                      */
-                    int partial(int moves, std::vector<bool> occupied);
+                    int partial(int moves);
 
                     /**
                      * \brief Alias for dist()

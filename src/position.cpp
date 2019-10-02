@@ -43,18 +43,15 @@ int Position::Path::dist() const
     return d;
 }
 
-int Position::Path::partial(int moves, std::vector<bool> occupied)
+int Position::Path::partial(int moves)
 {
-    if (dist() <= moves)
-        return path.back();
+    Path par(path[0]);
+    size_t pos = 1;
 
-    Position start(path[0]);
-    int pos = 0;
+    while ((pos < path.size()) && (par.dist() < moves) && (par.path.back() >= Board::ROOM_COUNT))
+        par.path.push_back(path[pos++]);
 
-    while (start.path(Position(path[pos]), occupied, 1).dist() < moves)
-        pos++;
-
-    return path[pos];
+    return par.path.back();
 }
 
 Position::Path::operator int() const
