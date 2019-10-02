@@ -292,10 +292,49 @@ int Bot::getMove(int allowedMoves)
         }
 
         return dest;
-    } else {
-    }
+    } else { // we want to make an accusation
+        std::vector<bool> occupied(Board::BOARD_SIZE, false);
+        for (auto p : board)
+            occupied[p.second] = true;
 
-    return 0;
+        Position::Path path(board[this->player]);
+        bool blocked = false;
+
+        try {
+            path = Position(board[this->player]).path(0, occupied, 1);
+        } catch (std::runtime_error&) { // we're blocked
+            blocked = true;
+        }
+
+        int dest;
+
+        if (blocked) { // we're blocked by another player
+            blocked = false;
+
+            // check if we can get around the blockage
+            try {
+                path = Position(board[this->player]).path(0, occupied, Board::ROOM_COUNT);
+            } catch (std::runtime_error&) {
+                blocked = true;
+            }
+
+            if (blocked) // we're completely stuck, we need to stay where we are
+                dest = board[this->player];
+            else // we can get around the blockage, get as far as we can
+                dest = path.partial(allowedMoves);
+        } else // we're not blocked, try and get to the middle
+            dest = path.partial(allowedMoves);
+
+        if (dest == 0) { // we're going to middle, get ready to accuse
+            curSuggestion.player = envelope.player;
+            curSuggestion.weapon = envelope.weapon;
+            curSuggestion.room = envelope.room;
+            haveSuggestion = true;
+        } else // not reaching the middle just yet
+            haveSuggestion = false;
+
+        return dest;
+    }
 }
 
 Bot::Suggestion Bot::getSuggestion()
