@@ -204,11 +204,24 @@ TEST_CASE("Bot class", "[bot]") {
 
             SECTION("completely blocked") {
                 bot.updateBoard({
-                        { Bot::SCARLET, 3 },
-                        { Bot::PLUM, 78 }
+                        { Bot::SCARLET, 43 },
+                        { Bot::PLUM, 33 },
+                        { Bot::PEACOCK, 44 }
                         });
-                REQUIRE(bot.getMove(12) == 3);
+                REQUIRE(bot.getMove(12) == 43);
                 REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+
+            SECTION("stuck in room") {
+                bot.updateBoard({
+                        { Bot::SCARLET, 6 },
+                        { Bot::PLUM, 41 }
+                        });
+                REQUIRE(bot.getMove(12) == 6);
+                REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                REQUIRE(sug.room == Bot::STUDY);
+                REQUIRE(sug.weapon != Bot::CANDLESTICK);
+                REQUIRE(sug.player != Bot::SCARLET);
             }
 
             SECTION("passage through room") {
@@ -218,7 +231,7 @@ TEST_CASE("Bot class", "[bot]") {
                         { Bot::PLUM, 74 }
                         });
                 REQUIRE(bot.getMove(12) == 9);
-                sug = bot.getSuggestion();
+                REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::LIVING_ROOM);
                 REQUIRE(sug.weapon != Bot::CANDLESTICK);
                 REQUIRE(sug.player != Bot::SCARLET);

@@ -242,17 +242,7 @@ int Bot::getMove(int allowedMoves)
                     all = true; // everything is blocked
                 }
 
-                if (all) { // we're completely stuck, so just stay were we are
-                    LOG_LOGIC("All pathways are blocked, staying in current position");
-                    haveSuggestion = false;
-                    return board[this->player];
-                } else { // go through another room
-                    int dest = start.path(getRoomPos(deck.rooms[0]), occupied,
-                            Board::ROOM_COUNT).partial(allowedMoves);
-                    // we already know about this room since it wasn't part of our deck, so try and
-                    // make the best of it and make a useful accusation
-                    curSuggestion.room = getPosRoom(dest);
-
+                auto setWeaponAndPlayer = [&]() {
                     auto safePlayers = getSafePlayers();
                     auto safeWeapons = getSafeWeapons();
 
@@ -270,7 +260,24 @@ int Bot::getMove(int allowedMoves)
                         curSuggestion.player = deck.players[0];
                         curSuggestion.weapon = deck.weapons[0];
                     }
+                };
 
+                if (all) { // we're completely stuck, so just stay were we are
+                    LOG_LOGIC("All pathways are blocked, staying in current position");
+                    if (board[this->player] >= Board::ROOM_COUNT)
+                        haveSuggestion = false;
+                    else {
+                        curSuggestion.room = getPosRoom(board[this->player]);
+                        setWeaponAndPlayer();
+                    }
+                    return board[this->player];
+                } else { // go through another room
+                    int dest = start.path(getRoomPos(deck.rooms[0]), occupied,
+                            Board::ROOM_COUNT).partial(allowedMoves);
+                    // we already know about this room since it wasn't part of our deck, so try and
+                    // make the best of it and make a useful accusation
+                    curSuggestion.room = getPosRoom(dest);
+                    setWeaponAndPlayer();
                     LOG_LOGIC("Can move through " << curSuggestion.room << " to get around blockage");
                     return getRoomPos(curSuggestion.room);
                 }
