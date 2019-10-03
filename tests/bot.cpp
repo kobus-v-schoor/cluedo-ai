@@ -156,15 +156,76 @@ TEST_CASE("Bot class", "[bot]") {
 
     SECTION("getMove and getSuggestion") {
         Bot::Player player = Bot::SCARLET;
-        std::vector<Bot::Player> order = { Bot::Player::SCARLET, Bot::Player::PLUM,
-            Bot::Player::PEACOCK , Bot::Player::GREEN };
+        Bot::Player other1 = Bot::PLUM;
+        Bot::Player other2 = Bot::PEACOCK;
+        std::vector<Bot::Player> order = { player, other1, other2 };
+        Bot bot(player, order);
 
         SECTION("incorrect use") {
-            Bot bot(player, order);
             REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
         }
 
-        SECTION("room");
+        SECTION("room") {
+            std::vector<Bot::Room> wanted = { Bot::DINING_ROOM, Bot::STUDY };
+
+            std::vector<Bot::Card> safePlayers = { Bot::PLUM, Bot::GREEN };
+            std::vector<Bot::Card> safeWeapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE, Bot::ROPE };
+
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                if (!contains(wanted,  Bot::Room(i)))
+                    bot.setCards({ Bot::Room(i) });
+
+            bot.setCards(safePlayers);
+            bot.setCards(safeWeapons);
+
+            int pos;
+            Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
+
+            SECTION("enter wanted room") {
+                bot.updateBoard({
+                        { player, 22 },
+                        { other1, 26 },
+                        { other2, 27 }
+                        });
+
+                pos = bot.getMove(4);
+                REQUIRE(pos == 8);
+                REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                REQUIRE(sug.room == Bot::DINING_ROOM);
+                REQUIRE_THAT(safePlayers, VectorContains(Bot::Card(sug.player)));
+                REQUIRE_THAT(safeWeapons, VectorContains(Bot::Card(sug.weapon)));
+            }
+
+            SECTION("enter unwanted room") {
+                bot.updateBoard({
+                        { player, 22 },
+                        { other1, 19 },
+                        { other2, 27 }
+                        });
+
+                bot.setCards(safePlayers);
+                bot.setCards(safeWeapons);
+
+                pos = bot.getMove(4);
+                REQUIRE(pos == 9);
+                REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                REQUIRE(sug.room == Bot::LIVING_ROOM);
+                REQUIRE(!contains(safePlayers, Bot::Card(sug.player)));
+                REQUIRE(!contains(safeWeapons, Bot::Card(sug.weapon)));
+            }
+
+            SECTION("enter tile") {
+                bot.updateBoard({
+                        { player, 30 },
+                        { other1, 19 },
+                        { other2, 27 }
+                        });
+
+                pos = bot.getMove(2);
+                REQUIRE(pos == 13);
+                REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+        }
 
         SECTION("player");
 
@@ -176,8 +237,8 @@ TEST_CASE("Bot class", "[bot]") {
     /**
      * This section is specifically intended to test private functionality of the Bot class that
      * would otherwise be very difficult to consistently test only through the Bot class' public
-     * members. Only functionality that is critical to the correct functioning of the rest of the
-     * class is tested here to minimize testing of private members.
+     * interface. Private variables should not be tested (except for the init section), only private
+     * functions.
      */
     SECTION("private") {
         /**
