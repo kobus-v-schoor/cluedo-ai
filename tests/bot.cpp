@@ -178,7 +178,6 @@ TEST_CASE("Bot class", "[bot]") {
             bot.setCards(safePlayers);
             bot.setCards(safeWeapons);
 
-            int pos;
             Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
 
             SECTION("enter wanted room") {
@@ -188,8 +187,7 @@ TEST_CASE("Bot class", "[bot]") {
                         { other2, 27 }
                         });
 
-                pos = bot.getMove(4);
-                REQUIRE(pos == 8);
+                REQUIRE(bot.getMove(4) == 8);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::DINING_ROOM);
                 REQUIRE_THAT(safePlayers, VectorContains(Bot::Card(sug.player)));
@@ -206,8 +204,7 @@ TEST_CASE("Bot class", "[bot]") {
                 bot.setCards(safePlayers);
                 bot.setCards(safeWeapons);
 
-                pos = bot.getMove(4);
-                REQUIRE(pos == 9);
+                REQUIRE(bot.getMove(4) == 9);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::LIVING_ROOM);
                 REQUIRE(!contains(safePlayers, Bot::Card(sug.player)));
@@ -221,15 +218,89 @@ TEST_CASE("Bot class", "[bot]") {
                         { other2, 27 }
                         });
 
-                pos = bot.getMove(2);
-                REQUIRE(pos == 13);
+                REQUIRE(bot.getMove(2) == 13);
                 REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
             }
         }
 
-        SECTION("player");
+        SECTION("player and weapon") {
+            Bot::Player player = Bot::SCARLET;
+            Bot::Player other1 = Bot::PLUM;
+            Bot::Player other2 = Bot::PEACOCK;
+            std::vector<Bot::Player> order = { player, other1, other2 };
+            Bot bot(player, order);
 
-        SECTION("weapon");
+            Bot::Room envelopeRoom = Bot::DINING_ROOM;
+            std::vector<Bot::Card> safeRooms = { Bot::STUDY, Bot::LIVING_ROOM };
+            std::vector<Bot::Card> safePlayers = { Bot::PLUM, Bot::GREEN };
+            std::vector<Bot::Card> safeWeapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE, Bot::ROPE };
+
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                if (Bot::Room(i) != envelopeRoom)
+                    bot.showCard(other1, Bot::Room(i));
+
+            bot.setCards(safeRooms);
+            bot.setCards(safePlayers);
+            bot.setCards(safeWeapons);
+
+            Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
+
+            SECTION("stay in safe") {
+                bot.updateBoard({
+                        { player, 9 },
+                        { other1, 38 },
+                        { other2, 39 }
+                        });
+
+                REQUIRE(bot.getMove(7) == 9);
+            }
+
+            SECTION("go from envelope to safe") {
+                bot.updateBoard({
+                        { player, 8 },
+                        { other1, 38 },
+                        { other2, 39 }
+                        });
+
+                REQUIRE(bot.getMove(7) == 9);
+            }
+
+            SECTION("stay in envelope") {
+                bot.updateBoard({
+                        { player, 8 },
+                        { other1, 38 },
+                        { other2, 39 }
+                        });
+
+                REQUIRE(bot.getMove(3) == 8);
+            }
+
+            SECTION("go to safe") {
+                SECTION("from room") {
+                    bot.updateBoard({
+                            { player, 5 },
+                            { other1, 38 },
+                            { other2, 39 }
+                            });
+
+                    REQUIRE(bot.getMove(3) == 6);
+                }
+
+                SECTION("from tile") {
+                    bot.updateBoard({
+                            { player, 54 },
+                            { other1, 38 },
+                            { other2, 39 }
+                            });
+
+                    REQUIRE(bot.getMove(5) == 6);
+                }
+            }
+
+            SECTION("cannot reach safe room");
+            SECTION("player");
+            SECTION("weapon");
+        }
 
         SECTION("accusation");
     }
@@ -553,6 +624,17 @@ TEST_CASE("Bot class", "[bot]") {
             BotTest bot(player, { player, other1, other2 } );
 
             std::vector<Bot::Room> wanted;
+
+            SECTION("already in wanted room") {
+                wanted = { Bot::DINING_ROOM , Bot::KITCHEN };
+                bot.updateBoard({
+                        { player, 8 },
+                        { other1, 33 },
+                        { other2, 34 }
+                        });
+
+                REQUIRE(bot.findNextMove(12, wanted) == bot.getRoomPos(Bot::KITCHEN));
+            }
 
             SECTION("unblocked wanted rooms") {
                 SECTION("reachable") {

@@ -264,8 +264,17 @@ int Bot::getMove(int allowedMoves)
                         getPosRoom(board[this->player]))) {
             if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos)))
                 dest = pos;
-        } else // we're not currently in a safe room, go to new destination
-            dest = pos;
+        } else { // we're not currently in a safe room
+            // we're in the envelope room, so technically safe but we should move away from here if
+            // we can get directly to another safe room to subvert suspicion
+            if ((board[this->player] < Board::ROOM_COUNT) &&
+                    (envelope.room == getPosRoom(board[this->player]))) {
+                if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos)))
+                    dest = pos;
+            } else // where not safe, go to the destination regardless
+                dest = pos;
+        }
+
 
         if (dest >= Board::ROOM_COUNT) { // new destination isn't a room
             haveSuggestion = false;
@@ -718,6 +727,11 @@ Bot::Room Bot::getPosRoom(int pos)
 
 int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
 {
+    // first check if we are already in a wanted room - if we are, remove it from the wanted list
+    if ((board[this->player] < Board::ROOM_COUNT) && contains(wanted,
+                getPosRoom(board[this->player])))
+        wanted.erase(std::find(wanted.begin(), wanted.end(), getPosRoom(board[this->player])));
+
     std::vector<std::pair<Room, Position::Path>> dists;
     Position start(board[this->player]);
 
