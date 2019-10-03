@@ -725,12 +725,77 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
     for (auto p : board)
         occupied[p.second] = true;
 
+    // find the distances for all the wanted rooms
     for (auto w : wanted) {
         try {
             Position::Path path = start.path(getRoomPos(w), occupied, 1);
             dists.push_back({ w, path });
         } catch (std::runtime_error&) {}; // blocked
     }
+
+    // check for all rooms that we can enter
+    std::vector<int> unwantedRooms;
+    for (int i = 1; i < Board::ROOM_COUNT; i++) {
+        int dist;
+        try {
+            dist = start.path(i, occupied, 1);
+        } catch (std::runtime_error&) {
+            continue;
+        }
+
+        if (dist <= allowedMoves)
+            unwantedRooms.push_back(i);
+    }
+
+    // will find the unwanted room that is closest to a wanted room (either by shortcut or by tiles)
+    auto findBestUnwanted = [&]() {
+        // <room pos, <wanted pos, wanted dist>>
+        std::map<int, std::pair<int, int>> unwantedDistance;
+        for (auto r : unwantedRooms) {
+            std::map<int, int> wantedDistance;
+
+            for (auto w : wanted) {
+                int p = getRoomPos(w);
+                wantedDistance[p] = Position(r).path(p, 1);
+            }
+
+            int min = wantedDistance.begin()->first;
+            for (auto w : wantedDistance)
+                if (w.second < wantedDistance[min])
+                    min = w.first;
+
+            unwantedDistance[r] = { min, wantedDistance[min] };
+        }
+
+        int min = unwantedDistance.begin()->first;
+        for (auto u : unwantedDistance)
+            if (u.second.second < unwantedDistance[min].second)
+                min = u.first;
+
+        return min;
+    };
+
+    // will follow the partial path up to the closest room
+    auto findClosestRoom = [&]() {
+        std::vector<Position::Path> paths;
+
+        for (int i = 1; i < Board::ROOM_COUNT; i++) {
+            try {
+                Position::Path p = Position(board[this->player]).path(i, occupied, 1);
+                paths.push_back(p);
+            } catch (std::runtime_error&) { // blocked
+                continue;
+            }
+        }
+
+        Position::Path min = *paths.begin();
+
+        for (auto p : paths)
+            if (p < min)
+                min = p;
+
+        return min.partial(allowedMoves);
+    };
 
     if (dists.empty()) { // everything was blocked in some way
         // first check if we can move at all
@@ -745,67 +810,12 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
         if (fenced) // we're completely stuck, so just stay here
             return board[this->player];
 
-        // check if there is any room that we can get into
-        std::vector<int> unwantedRooms;
-        for (int i = 1; i < Board::ROOM_COUNT; i++) {
-            int dist;
-            try {
-                dist = start.path(i, occupied, 1);
-            } catch (std::runtime_error&) {
-                continue;
-            }
-
-            if (dist <= allowedMoves)
-                unwantedRooms.push_back(i);
-        }
-
         if (unwantedRooms.empty()) { // we cannot reach anything
-            // move towards the closest wanted room
-            for (auto w : wanted)
-                dists.push_back({ w, start.path(getRoomPos(w), {}, 1)});
-
-            int min = 0;
-            for (size_t i = 1; i < dists.size(); i++)
-                if (dists[i].second < dists[min].second)
-                    min = i;
-
-            auto path = dists[min].second.getPath();
-            Position::Path newPath(*path.begin());
-
-            for (size_t i = 1; i < path.size(); i++) {
-                if (occupied[path[i]])
-                    break;
-                newPath.append(path[i]);
-            }
-
-            return newPath.partial(allowedMoves);
+            // move towards the closest room
+            return findClosestRoom();
         } else { // we can reach at least one unwanted room
             // move towards the unwanted room with the closest wanted room
-
-            // <room pos, <wanted pos, wanted dist>>
-            std::map<int, std::pair<int, int>> unwantedDistance;
-            for (auto r : unwantedRooms) {
-                std::map<int, int> wantedDistance;
-
-                for (auto w : wanted) {
-                    int p = getRoomPos(w);
-                    wantedDistance[p] = Position(r).path(p, {}, 1);
-                }
-
-                int min = wantedDistance.begin()->first;
-                for (auto w : wantedDistance)
-                    if (w.second < wantedDistance[min])
-                        min = w.first;
-
-                unwantedDistance[r] = { min, wantedDistance[min] };
-            }
-
-            int min = unwantedDistance.begin()->first;
-            for (auto u : unwantedDistance)
-                if (u.second.second < unwantedDistance[min].second)
-                    min = u.first;
-
-            return min;
+            return findBestUnwanted();
         }
     } else { // some of the rooms were unblocked
         // first check if we can reach any of the rooms, if we can - go there
@@ -813,16 +823,12 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
             if (d.second <= allowedMoves)
                 return getRoomPos(d.first);
 
-        // TODO: possibly optimize this logic by rather going for the highest pref probable (total
-        // moves needed is less than average throw)
+        // if there is any unwanted rooms we can go in to, rather go there
+        if (!unwantedRooms.empty())
+            return findBestUnwanted();
 
-        // no rooms were found that was in reach, go to the closest room regardless of preference
-        int roomIndex = 0;
-        for (size_t i = 1; i < dists.size(); i++)
-            if (dists[i].second < dists[roomIndex].second)
-                roomIndex = i;
-
-        return dists[roomIndex].second.partial(allowedMoves);
+        // no rooms were found that was in reach, go towards the closest room
+        return findClosestRoom();
     }
 }
 

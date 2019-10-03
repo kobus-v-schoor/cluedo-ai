@@ -485,6 +485,116 @@ TEST_CASE("Bot class", "[bot]") {
         }
 
         SECTION("findNextMove") {
+            Bot::Player player = Bot::SCARLET;
+            Bot::Player other1 = Bot::PLUM;
+            Bot::Player other2 = Bot::PEACOCK;
+
+            BotTest bot(player, { player, other1, other2 } );
+
+            std::vector<Bot::Room> wanted;
+
+            SECTION("unblocked wanted rooms") {
+                SECTION("reachable") {
+                    wanted = { Bot::DINING_ROOM, Bot::LIVING_ROOM, Bot::COURTYARD };
+                    bot.updateBoard({
+                            { player, 30 },
+                            { other1, 34 },
+                            { other2, 35 }
+                            });
+
+                    REQUIRE(bot.findNextMove(6, wanted) == bot.getRoomPos(Bot::DINING_ROOM));
+                    REQUIRE(bot.findNextMove(5, wanted) == bot.getRoomPos(Bot::LIVING_ROOM));
+                }
+
+                SECTION("unreachable") {
+                    SECTION("unwanted room reachable") {
+                        wanted = { Bot::KITCHEN, Bot::DINING_ROOM };
+                        bot.updateBoard({
+                                { player, 48 },
+                                { other1, 21 },
+                                { other2, 35 }
+                                });
+
+                        REQUIRE(bot.findNextMove(10, wanted) == 2);
+                    }
+
+                    SECTION("no rooms reachable") {
+                        wanted = { Bot::DINING_ROOM };
+                        bot.updateBoard({
+                                { player, 29 },
+                                { other1, 21 },
+                                { other2, 35 }
+                                });
+
+                        REQUIRE(int(Position(bot.findNextMove(2, wanted)).path(9)) == 2);
+                    }
+                }
+            }
+
+            SECTION("no unblocked wanted rooms") {
+                SECTION("fenced in") {
+                    wanted = { Bot::DINING_ROOM, Bot::LIVING_ROOM, Bot::COURTYARD };
+
+                    SECTION("in room") {
+                        bot.updateBoard({
+                                { player, 3 },
+                                { other1, 78 },
+                                { other2, 77 }
+                                });
+
+                        REQUIRE(bot.findNextMove(12, wanted) == 3);
+                    }
+
+                    SECTION("on tiles") {
+                        bot.updateBoard({
+                                { player, 43 },
+                                { other1, 33 },
+                                { other2, 44 }
+                                });
+
+                        REQUIRE(bot.findNextMove(12, wanted) == 43);
+                    }
+                }
+
+                SECTION("can reach unwanted room") {
+                    SECTION("closest by tiles") {
+                        wanted = { Bot::STUDY, Bot::GAMES_ROOM };
+                        bot.updateBoard({
+                                { player, 64 },
+                                { other1, 41 },
+                                { other2, 78 }
+                                });
+
+                        REQUIRE(bot.findNextMove(5, wanted) == 5);
+                    }
+
+                    SECTION("closest by shortcut") {
+                        wanted = { Bot::STUDY, Bot::BEDROOM };
+                        bot.updateBoard({
+                                { player, 23 },
+                                { other1, 41 },
+                                { other2, 74 }
+                                });
+
+                        REQUIRE(bot.findNextMove(5, wanted) == 9);
+                    }
+                }
+
+                SECTION("cannot reach any rooms") {
+                    Bot::Player other3 = Bot::GREEN;
+                    BotTest bot(player, { player, other1, other2, other3 });
+
+                    wanted = { Bot::BEDROOM, Bot::STUDY };
+                    bot.updateBoard({
+                            { player, 64 },
+                            { other1, 41 },
+                            { other2, 51 },
+                            { other3, 74 }
+                            });
+
+                    REQUIRE(bot.findNextMove(5, wanted) == 78);
+                }
+            }
         }
 
         SECTION("choosePlayerOffensive") {
