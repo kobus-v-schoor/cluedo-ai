@@ -3,6 +3,7 @@
 #include "../include/bot.h"
 #include "../include/tests.h"
 #include "../include/deck.h"
+#include "../include/board.h"
 
 using namespace AI;
 using Catch::Matchers::Equals;
@@ -297,12 +298,122 @@ TEST_CASE("Bot class", "[bot]") {
                 }
             }
 
-            SECTION("cannot reach safe room");
-            SECTION("player");
-            SECTION("weapon");
+            SECTION("cannot reach room") {
+                bot.updateBoard({
+                        { player, 38 },
+                        { other1, 32 },
+                        { other2, 33 }
+                        });
+
+                REQUIRE(bot.getMove(2) >= Board::ROOM_COUNT);
+                REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+
+            SECTION("player")  {
+                SECTION("in safe room") {
+                    bot.updateBoard({
+                            { player, 23 },
+                            { other1, 31 },
+                            { other2, 32 }
+                            });
+                    bot.getMove(3);
+
+                    REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                    REQUIRE_FALSE(contains(safePlayers, Bot::Card(sug.player)));
+                    REQUIRE_THAT(safeWeapons, VectorContains(Bot::Card(sug.weapon)));
+                }
+
+                SECTION("not in safe room") {
+                    bot.updateBoard({
+                            { player, 72 },
+                            { other1, 31 },
+                            { other2, 32 }
+                            });
+                    bot.getMove(3);
+
+                    REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                    REQUIRE_FALSE(contains(safePlayers, Bot::Card(sug.player)));
+                    REQUIRE_FALSE(contains(safeWeapons, Bot::Card(sug.weapon)));
+                }
+            }
+
+            SECTION("weapon") {
+                Bot::Player envelopePlayer = Bot::MUSTARD;
+
+                for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                    if (Bot::Player(i) != envelopePlayer)
+                        bot.showCard(other1, Bot::Player(i));
+
+                SECTION("in safe room") {
+                    bot.updateBoard({
+                            { player, 23 },
+                            { other1, 31 },
+                            { other2, 32 }
+                            });
+                    bot.getMove(3);
+
+                    REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                    REQUIRE_THAT(safePlayers, VectorContains(Bot::Card(sug.player)));
+                    REQUIRE_FALSE(contains(safeWeapons, Bot::Card(sug.weapon)));
+                }
+
+                SECTION("not in safe room") {
+                    bot.updateBoard({
+                            { player, 72 },
+                            { other1, 31 },
+                            { other2, 32 }
+                            });
+                    bot.getMove(3);
+
+                    REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                    REQUIRE(contains(order, sug.player));
+                    REQUIRE_FALSE(contains(safeWeapons, Bot::Card(sug.weapon)));
+                }
+            }
         }
 
-        SECTION("accusation");
+        SECTION("accusation") {
+            Bot::Player envelopePlayer = Bot::SCARLET;
+            Bot::Weapon envelopeWeapon = Bot::CANDLESTICK;
+            Bot::Room envelopeRoom = Bot::BEDROOM;
+
+            for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                if (Bot::Player(i) != envelopePlayer)
+                    bot.showCard(other1, Bot::Player(i));
+            for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                if (Bot::Weapon(i) != envelopeWeapon)
+                    bot.showCard(other1, Bot::Weapon(i));
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                if (Bot::Room(i) != envelopeRoom)
+                    bot.showCard(other1, Bot::Room(i));
+
+            Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
+
+            SECTION("can reach") {
+                bot.updateBoard({
+                        { player, 39 },
+                        { other1, 32 },
+                        { other2, 33 }
+                        });
+
+                REQUIRE(bot.getMove(3) == 0);
+                REQUIRE_NOTHROW(sug = bot.getSuggestion());
+                REQUIRE(sug.player == envelopePlayer);
+                REQUIRE(sug.weapon == envelopeWeapon);
+                REQUIRE(sug.room == envelopeRoom);
+            }
+
+            SECTION("cannot reach") {
+                bot.updateBoard({
+                        { player, 39 },
+                        { other1, 32 },
+                        { other2, 33 }
+                        });
+
+                REQUIRE(bot.getMove(2) == 37);
+                REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
+            }
+        }
     }
 
     /**

@@ -103,6 +103,7 @@ tests/bot.o: \
  include/bot.h \
  include/tests.h \
  include/deck.h \
+ include/board.h \
  include/macros.h \
  include/position.h
 	$(go) tests/bot.cpp -o tests/bot.o
