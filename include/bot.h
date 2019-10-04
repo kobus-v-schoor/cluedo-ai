@@ -380,7 +380,6 @@ namespace AI {
              *
              * \returns the card to show to the other player
              */
-            NOT_IMPLEMENTED
             Card getCard(Player player, std::vector<Card> cards);
 
             /**

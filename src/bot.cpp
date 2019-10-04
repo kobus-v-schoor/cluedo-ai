@@ -379,7 +379,28 @@ void Bot::noShowCard()
     }
 }
 
-Bot::Card Bot::getCard(Player player, std::vector<Card> cards){ return Card(Player(0)); }
+Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
+{
+    // check if we can find a card that the player has already seen
+    for (auto c : cards)
+        if (notes[player][c].seen)
+            return c;
+
+    // find the card type the player knows the least about and show that type to them
+    // this way we minimize the risk of giving them the info needed to find an envelope card
+    std::vector<int> types(3, 0);
+
+    for (auto c : notes[player])
+        if (c.second.seen)
+            types[int(c.first.type)]++;
+
+    int min = 0;
+    for (size_t i = 1; i < cards.size(); i++)
+        if (types[int(cards[i].type)] < types[int(cards[min].type)])
+            min = i;
+
+    return cards[min];
+}
 
 void Bot::newTurn()
 {
