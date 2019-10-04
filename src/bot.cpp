@@ -232,7 +232,7 @@ int Bot::getMove(int allowedMoves)
     };
 
     if (!envelope.haveRoom) {
-        int pos = findNextMove(allowedMoves, deck.rooms);
+        int pos = findNextMove(allowedMoves, deck.rooms, true);
 
         if (pos < Board::ROOM_COUNT) { // we're entering a room
             Room room = getPosRoom(pos);
@@ -256,7 +256,7 @@ int Bot::getMove(int allowedMoves)
 
         return pos;
     } else if (!envelope.havePlayer || !envelope.haveWeapon) {
-        int pos = findNextMove(allowedMoves, safeRooms);
+        int pos = findNextMove(allowedMoves, safeRooms, true);
         int dest = board[this->player];
 
         // if we are already in a safe room, only change if the new destination is also a safe room
@@ -725,7 +725,7 @@ Bot::Room Bot::getPosRoom(int pos)
     return COURTYARD;
 }
 
-int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
+int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccupied)
 {
     // first check if we are already in a wanted room - if we are, remove it from the wanted list
     if ((board[this->player] < Board::ROOM_COUNT) && contains(wanted,
@@ -736,8 +736,9 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted)
     Position start(board[this->player]);
 
     std::vector<bool> occupied(Board::BOARD_SIZE, false);
-    for (auto p : board)
-        occupied[p.second] = true;
+    if (!allowOccupied)
+        for (auto p : board)
+            occupied[p.second] = true;
 
     // find the distances for all the wanted rooms
     for (auto w : wanted) {

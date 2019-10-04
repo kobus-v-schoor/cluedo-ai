@@ -502,9 +502,10 @@ namespace AI {
              * rooms
              * \param allowedMoves amount of moves player is allowed to make
              * \param wanted list of prefered rooms sorted by preference
+             * \param allowOccupied allow player to go through tiles occupied by other players
              * \returns the integer position for the next move
              */
-            int findNextMove(int allowedMoves, std::vector<Room> wanted);
+            int findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccupied = false);
 
             /**
              * \brief Tries to choose a player that will be disadvantaged the most

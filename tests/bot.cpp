@@ -196,7 +196,7 @@ TEST_CASE("Bot class", "[bot]") {
 
             SECTION("enter unwanted room") {
                 bot.updateBoard({
-                        { player, 22 },
+                        { player, 70 },
                         { other1, 19 },
                         { other2, 27 }
                         });
@@ -204,9 +204,9 @@ TEST_CASE("Bot class", "[bot]") {
                 bot.setCards(safePlayers);
                 bot.setCards(safeWeapons);
 
-                REQUIRE(bot.getMove(4) == 9);
+                REQUIRE(bot.getMove(4) == 3);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
-                REQUIRE(sug.room == Bot::LIVING_ROOM);
+                REQUIRE(sug.room == Bot::GAMES_ROOM);
                 REQUIRE(!contains(safePlayers, Bot::Card(sug.player)));
                 REQUIRE(!contains(safeWeapons, Bot::Card(sug.weapon)));
             }
