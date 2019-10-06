@@ -142,6 +142,11 @@ namespace AI {
             static const Room MAX_ROOM = GAMES_ROOM;
 
             /**
+             * \brief If true then an occupied tile is blocked, so we can't move through it
+             */
+            static const bool OCCUPIED_BLOCKED = false;
+
+            /**
              * \brief Class used to encapsulate a generic card
              *
              * This class will be used for any parameters that can be of any card type. Using the
@@ -232,6 +237,11 @@ namespace AI {
                  * \brief Deduced that the player has the card
                  */
                 bool deduced = false;
+
+                /**
+                 * \brief The card was put on the table
+                 */
+                bool table = false;
 
                 /**
                  * \returns true if we know if the player has the card or not
@@ -337,11 +347,13 @@ namespace AI {
              * the AI player of all the cards the human player has been shown during the game. If
              * any cards are put "face-up" in the beginning of the game, also use this function to
              * notify the AI.
+             * \parm cards the cards
+             * \param tableCards if true, these are cards that were put face up on the table
              * \note This function only updates the cards, it doesn't replace it, meaning that you
              * can call this function twice with different cards and both sets of cards will be
              * saved.
              */
-            void setCards(std::vector<Card> cards);
+            void setCards(std::vector<Card> cards, bool tableCards = false);
 
             /**
              * \brief This can be used to update all of the player's positions on the board

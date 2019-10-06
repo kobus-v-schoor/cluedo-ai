@@ -48,11 +48,8 @@ bool NoShowDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
             continue;
         }
 
-        size_t pos = (start + 1) == order.size() ? 0 : start + 1;
+        size_t pos = ((start + 1) == order.size()) ? 0 : start + 1;
         while (pos != end) {
-            if (pos >= order.size())
-                pos = 0;
-
             for (auto c : { Bot::Card(l.suggestion.player), Bot::Card(l.suggestion.weapon),
                     Bot::Card(l.suggestion.room) }) {
                 if (!notes[order[pos]][c].concluded()) {
@@ -63,6 +60,8 @@ bool NoShowDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
             }
 
             pos++;
+            if (pos >= order.size())
+                pos = 0;
         }
     }
 

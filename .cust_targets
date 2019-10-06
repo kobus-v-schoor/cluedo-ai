@@ -18,3 +18,6 @@ coverage:
 	genhtml coverage.info --output-directory coverage; \
 	rm coverage.info; \
 	$(MAKE) clean
+
+game: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
+	./test [game]

@@ -302,9 +302,9 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     for (int i = 0; i <= int(MAX_ROOM); i++)
         notes[player][Room(i)].lacks = true;
 
-    deductors.push_back(new LocalExcludeDeductor());
+    /* deductors.push_back(new LocalExcludeDeductor()); */
     deductors.push_back(new NoShowDeductor(order));
-    deductors.push_back(new SeenDeductor());
+    /* deductors.push_back(new SeenDeductor()); */
 
     predictors.push_back(new SeenPredictor());
 }
@@ -317,12 +317,18 @@ Bot::~Bot()
         delete p;
 }
 
-void Bot::setCards(const std::vector<Card> cards)
+void Bot::setCards(const std::vector<Card> cards, bool tableCards)
 {
     for (auto c : cards) {
         notes[player][c].has = true;
         notes[player][c].lacks = false;
+        notes[player][c].table = tableCards;
     }
+
+    if (tableCards)
+        for (auto o : order)
+            for (auto c : cards)
+                notes[o][c].seen = true;
 
     notesHook();
 }
@@ -384,7 +390,7 @@ int Bot::getMove(int allowedMoves)
     };
 
     if (!envelope.haveRoom) {
-        int pos = findNextMove(allowedMoves, deck.rooms, true);
+        int pos = findNextMove(allowedMoves, deck.rooms, !OCCUPIED_BLOCKED);
 
         if (pos < Board::ROOM_COUNT) { // we're entering a room
             Room room = getPosRoom(pos);
@@ -408,7 +414,7 @@ int Bot::getMove(int allowedMoves)
 
         return pos;
     } else if (!envelope.havePlayer || !envelope.haveWeapon) {
-        int pos = findNextMove(allowedMoves, safeRooms, true);
+        int pos = findNextMove(allowedMoves, safeRooms, !OCCUPIED_BLOCKED);
         int dest = board[this->player];
 
         // if we are already in a safe room, only change if the new destination is also a safe room
@@ -455,8 +461,9 @@ int Bot::getMove(int allowedMoves)
         return dest;
     } else { // we want to make an accusation
         std::vector<bool> occupied(Board::BOARD_SIZE, false);
-        for (auto p : board)
-            occupied[p.second] = true;
+        if (OCCUPIED_BLOCKED)
+            for (auto p : board)
+                occupied[p.second] = true;
 
         Position::Path path(board[this->player]);
         bool blocked = false;
@@ -487,12 +494,19 @@ int Bot::getMove(int allowedMoves)
             dest = path.partial(allowedMoves);
 
         if (dest == 0) { // we're going to middle, get ready to accuse
+            haveSuggestion = true;
             curSuggestion.player = envelope.player;
             curSuggestion.weapon = envelope.weapon;
             curSuggestion.room = envelope.room;
-            haveSuggestion = true;
-        } else // not reaching the middle just yet
-            haveSuggestion = false;
+        } else { // not reaching the middle just yet
+            if (dest < Board::ROOM_COUNT) { // we're going through another room
+                haveSuggestion = true;
+                curSuggestion.room = getPosRoom(dest);
+                curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
+                curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
+            } else // we just on a tile
+                haveSuggestion = false;
+        }
 
         return dest;
     }
@@ -621,7 +635,7 @@ bool Bot::findEnvelope()
     // a card, check if we know that everyone has all the cards except for one
 
     if (!envelope.havePlayer) {
-        for (int i = 0; (i <= int(MAX_PLAYER)); i++) {
+        for (int i = 0; i <= int(MAX_PLAYER); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Player(i)].lacks) {
@@ -671,7 +685,7 @@ bool Bot::findEnvelope()
     }
 
     if (!envelope.haveWeapon) {
-        for (int i = 0; (i <= int(MAX_WEAPON)); i++) {
+        for (int i = 0; i <= int(MAX_WEAPON); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Weapon(i)].lacks) {
@@ -721,7 +735,7 @@ bool Bot::findEnvelope()
     }
 
     if (!envelope.haveRoom) {
-        for (int i = 0; (i <= int(MAX_ROOM)); i++) {
+        for (int i = 0; i <= int(MAX_ROOM); i++) {
             bool found = false;
             for (auto player : order) {
                 if (!notes[player][Room(i)].lacks) {
@@ -830,7 +844,7 @@ std::vector<Bot::Player> Bot::getSafePlayers()
     std::vector<Player> players;
 
     for (int i = 0; i <= int(MAX_PLAYER); i++)
-        if (notes[player][Player(i)].has)
+        if (notes[player][Player(i)].has) // && notes[player][Player(i)].table)
             players.push_back(Player(i));
 
     if (players.empty() && envelope.havePlayer)
@@ -844,7 +858,7 @@ std::vector<Bot::Weapon> Bot::getSafeWeapons()
     std::vector<Weapon> weapons;
 
     for (int i = 0; i <= int(MAX_WEAPON); i++)
-        if (notes[player][Weapon(i)].has)
+        if (notes[player][Weapon(i)].has) // && notes[player][Weapon(i)].table)
             weapons.push_back(Weapon(i));
 
     if (weapons.empty() && envelope.haveWeapon)
@@ -858,7 +872,7 @@ std::vector<Bot::Room> Bot::getSafeRooms()
     std::vector<Room> rooms;
 
     for (int i = 0; i <= int(MAX_ROOM); i++)
-        if (notes[player][Room(i)].has)
+        if (notes[player][Room(i)].has) // && notes[player][Room(i)].has)
             rooms.push_back(Room(i));
 
     if (rooms.empty() && envelope.haveRoom)
@@ -1015,8 +1029,8 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccu
                 return getRoomPos(d.first);
 
         // if there is any unwanted rooms we can go in to, rather go there
-        if (!unwantedRooms.empty())
-            return findBestUnwanted();
+        /* if (!unwantedRooms.empty()) */
+        /*     return findBestUnwanted(); */
 
         // no rooms were found that was in reach, go towards the closest room
         return findClosestRoom();

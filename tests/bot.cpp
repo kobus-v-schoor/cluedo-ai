@@ -69,6 +69,7 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE_FALSE(notes.seen);
         REQUIRE_FALSE(notes.lacks);
         REQUIRE_FALSE(notes.deduced);
+        REQUIRE_FALSE(notes.table);
 
         notes.has = true;
         REQUIRE(notes.concluded());

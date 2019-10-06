@@ -55,6 +55,7 @@ test: \
  tests/predictors/seen.o \
  tests/board.o \
  tests/bot.o \
+ tests/game.o \
  tests/deductors/no-show.o \
  tests/deductors/seen.o \
  tests/deductors/local-exclude.o \
@@ -69,7 +70,7 @@ test: \
  src/deductors/local-exclude.o \
  src/position.o \
  src/deck.o
-	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o -o test
+	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o -o test
 
 test.o: \
  test.cpp \
@@ -107,6 +108,14 @@ tests/bot.o: \
  include/macros.h \
  include/position.h
 	$(go) tests/bot.cpp -o tests/bot.o
+
+tests/game.o: \
+ tests/game.cpp \
+ include/bot.h \
+ include/board.h \
+ include/macros.h \
+ include/position.h
+	$(go) tests/game.cpp -o tests/game.o
 
 tests/deductors/no-show.o: \
  tests/deductors/no-show.cpp \
@@ -238,10 +247,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o ai.tar.gz test
+	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp tests/deck.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp src/deck.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/game.cpp tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp tests/deck.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp src/deck.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile
@@ -263,3 +272,6 @@ coverage:
 	genhtml coverage.info --output-directory coverage; \
 	rm coverage.info; \
 	$(MAKE) clean
+
+game: $(shell [[ -f last_build ]] && cat last_build || echo debug) | last_build
+	./test [game]
