@@ -60,15 +60,15 @@ Bot::Weapon Bot::strToWeapon(std::string s)
 
     if (s == "candlestick")
         return CANDLESTICK;
-    if (s == "dagger")
+    if ((s == "dagger") || (s == "knife"))
         return KNIFE;
     if (s == "lead pipe")
         return LEAD_PIPE;
-    if (s == "pistol")
+    if ((s == "pistol") || (s == "revolver"))
         return REVOLVER;
     if (s == "rope")
         return ROPE;
-    if (s == "wrench")
+    if ((s == "wrench") || (s == "spanner"))
         return SPANNER;
 
     throw std::invalid_argument("\"" + s + "\" is not a valid weapon");
@@ -82,7 +82,7 @@ Bot::Room Bot::strToRoom(std::string s)
         return COURTYARD;
     if (s == "garage")
         return GARAGE;
-    if (s == "game room")
+    if ((s == "game room") || (s == "games room") || (s == "billiard room"))
         return GAMES_ROOM;
     if (s == "bedroom")
         return BEDROOM;
