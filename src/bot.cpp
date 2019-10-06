@@ -28,6 +28,123 @@ bool contains(std::vector<T>& vec, T obj)
     return std::find(vec.begin(), vec.end(), obj) != vec.end();
 }
 
+void toLower(std::string& s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char a) { return
+            std::tolower(a); });
+}
+
+Bot::Player Bot::strToPlayer(std::string s)
+{
+    toLower(s);
+
+    if (s == "green")
+        return GREEN;
+    if (s == "mustard")
+        return MUSTARD;
+    if (s == "peacock")
+        return PEACOCK;
+    if (s == "plum")
+        return PLUM;
+    if (s == "scarlet")
+        return SCARLET;
+    if (s == "white")
+        return WHITE;
+
+    throw std::invalid_argument("\"" + s + "\" is not a valid player");
+}
+
+Bot::Weapon Bot::strToWeapon(std::string s)
+{
+    toLower(s);
+
+    if (s == "candlestick")
+        return CANDLESTICK;
+    if (s == "dagger")
+        return KNIFE;
+    if (s == "lead pipe")
+        return LEAD_PIPE;
+    if (s == "pistol")
+        return REVOLVER;
+    if (s == "rope")
+        return ROPE;
+    if (s == "wrench")
+        return SPANNER;
+
+    throw std::invalid_argument("\"" + s + "\" is not a valid weapon");
+}
+
+Bot::Room Bot::strToRoom(std::string s)
+{
+    toLower(s);
+
+    if (s == "courtyard")
+        return COURTYARD;
+    if (s == "garage")
+        return GARAGE;
+    if (s == "game room")
+        return GAMES_ROOM;
+    if (s == "bedroom")
+        return BEDROOM;
+    if (s == "bathroom")
+        return BATHROOM;
+    if (s == "study")
+        return STUDY;
+    if (s == "kitchen")
+        return KITCHEN;
+    if (s == "dining room")
+        return DINING_ROOM;
+    if (s == "living room")
+        return LIVING_ROOM;
+
+    throw std::invalid_argument("\"" + s + "\" is not a valid room");
+}
+
+std::string Bot::playerToStr(Player p)
+{
+    switch (p) {
+        case GREEN: return "Green";
+        case MUSTARD: return "Mustard";
+        case PEACOCK: return "Peacock";
+        case PLUM: return "Plum";
+        case SCARLET: return "Scarlet";
+        case WHITE: return "White";
+    }
+
+    return "";
+}
+
+std::string Bot::weaponToStr(Weapon w)
+{
+    switch (w) {
+        case CANDLESTICK: return "Candlestick";
+        case KNIFE: return "Dagger";
+        case LEAD_PIPE: return "Lead Pipe";
+        case REVOLVER: return "Pistol";
+        case ROPE: return "Rope";
+        case SPANNER: return "Wrench";
+    }
+
+    return "";
+}
+
+std::string Bot::roomToStr(Room r)
+{
+    switch (r) {
+        case COURTYARD: return "Courtyard";
+        case GARAGE: return "Garage";
+        case GAMES_ROOM: return "Game Room";
+        case BEDROOM: return "Bedroom";
+        case BATHROOM: return "Bathroom";
+        case STUDY: return "Study";
+        case KITCHEN: return "Kitchen";
+        case DINING_ROOM: return "Dining Room";
+        case LIVING_ROOM: return "Living Room";
+    }
+
+    return "";
+}
+
 Bot::Card::Card(Bot::Player p):
     card(int(p)),
     type(Card::Type::PLAYER)
@@ -43,6 +160,25 @@ Bot::Card::Card(Bot::Room r):
     type(Card::Type::ROOM)
 {}
 
+Bot::Card::Card(std::string s)
+{
+    try {
+        Bot::Player p = strToPlayer(s);
+        type = PLAYER;
+        card = int(p);
+    } catch (std::invalid_argument&) {
+        try {
+            Bot::Weapon w = strToWeapon(s);
+            type = WEAPON;
+            card = int(w);
+        } catch (std::invalid_argument&) {
+            Bot::Room r = strToRoom(s);
+            type = ROOM;
+            card = int(r);
+        }
+    }
+}
+
 bool Bot::Card::operator<(const Card& other) const
 {
     return type == other.type ? card < other.card : type < other.type;
@@ -51,6 +187,22 @@ bool Bot::Card::operator<(const Card& other) const
 bool Bot::Card::operator==(const Card& other) const
 {
     return (type == other.type) && (card == other.card);
+}
+
+std::string Bot::Card::str() const
+{
+    switch (type) {
+        case PLAYER: return playerToStr(Bot::Player(card));
+        case WEAPON: return weaponToStr(Bot::Weapon(card));
+        case ROOM: return roomToStr(Bot::Room(card));
+    }
+
+    return "";
+}
+
+Bot::Card::operator std::string() const
+{
+    return this->str();
 }
 
 Bot::Suggestion::Suggestion(Player p, Weapon w, Room r):

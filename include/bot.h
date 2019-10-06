@@ -171,8 +171,8 @@ namespace AI {
                  *
                  * Use the type member to recast the int back to its original value
                  */
-                const int card;
-                const Type type;
+                int card;
+                Type type;
 
                 bool operator<(const Card& other) const;
                 bool operator==(const Card& other) const;

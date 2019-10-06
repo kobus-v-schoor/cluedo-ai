@@ -124,6 +124,40 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE_FALSE(log.waiting());
     }
 
+    SECTION("conversion between enums and strings") {
+        for (int i = 0; i <= int(Bot::MAX_PLAYER); i++) {
+            Bot::Player p = Bot::Player(i);
+            REQUIRE(Bot::strToPlayer(Bot::playerToStr(p)) == p);
+
+            Bot::Card c(Bot::playerToStr(p));
+            REQUIRE(c.type == Bot::Card::PLAYER);
+            REQUIRE(c.card == i);
+        }
+
+        for (int i = 0; i <= int(Bot::MAX_WEAPON); i++) {
+            Bot::Weapon w = Bot::Weapon(i);
+            REQUIRE(Bot::strToWeapon(Bot::weaponToStr(w)) == w);
+
+            Bot::Card c(Bot::weaponToStr(w));
+            REQUIRE(c.type == Bot::Card::WEAPON);
+            REQUIRE(c.card == i);
+        }
+
+        for (int i = 0; i <= int(Bot::MAX_ROOM); i++) {
+            Bot::Room r = Bot::Room(i);
+            REQUIRE(Bot::strToRoom(Bot::roomToStr(r)) == r);
+
+            Bot::Card c(Bot::roomToStr(r));
+            REQUIRE(c.type == Bot::Card::ROOM);
+            REQUIRE(c.card == i);
+        }
+
+        REQUIRE_THROWS_AS(Bot::strToPlayer("exception"), std::invalid_argument&);
+        REQUIRE_THROWS_AS(Bot::strToWeapon("exception"), std::invalid_argument&);
+        REQUIRE_THROWS_AS(Bot::strToRoom("exception"), std::invalid_argument&);
+        REQUIRE_THROWS_AS(Bot::Card("exception"), std::invalid_argument&);
+    }
+
     SECTION("set cards") {
         Bot::Player player = Bot::SCARLET;
         Bot::Weapon weapon = Bot::CANDLESTICK;
