@@ -399,6 +399,9 @@ Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
         if (types[int(cards[i].type)] < types[int(cards[min].type)])
             min = i;
 
+    // we now know the other player has seen this card
+    notes[player][cards[min]].seen = true;
+
     return cards[min];
 }
 
