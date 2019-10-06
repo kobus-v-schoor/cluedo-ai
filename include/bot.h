@@ -80,6 +80,45 @@ namespace AI {
             };
 
             /**
+             * \brief Converts a comms-protocol string to a Player enum
+             * \throw std::invalid_argument if the string isn't a valid player
+             * \note This is case-insensitive, e.g. either "Dagger" or "dagger" will work
+             */
+            static Player strToPlayer(std::string s);
+
+            /**
+             * \brief Converts a comms-protocol string to a Weapon enum
+             * \throw std::invalid_argument if the string isn't a valid weapon
+             * \note This is case-insensitive, e.g. either "Dagger" or "dagger" will work
+             */
+            static Weapon strToWeapon(std::string s);
+
+            /**
+             * \brief Converts a comms-protocol string to a Room enum
+             * \throw std::invalid_argument if the string isn't a valid room
+             * \note This is case-insensitive, e.g. either "Dagger" or "dagger" will work
+             */
+            static Room strToRoom(std::string s);
+
+            /**
+             * \brief Converts a Player enum to a comms-protocol string
+             * \note Returns the string with the first letter capitalized e.g. "Dagger"
+             */
+            static std::string playerToStr(Player p);
+
+            /**
+             * \brief Converts a Weapon enum to a comms-protocol string
+             * \note Returns the string with the first letter capitalized e.g. "Dagger"
+             */
+            static std::string weaponToStr(Weapon w);
+
+            /**
+             * \brief Converts a Room enum to a comms-protocol string
+             * \note Returns the string with the first letter capitalized e.g. "Dagger"
+             */
+            static std::string roomToStr(Room r);
+
+            /**
              * \brief Maximum amount of times the deductor loop can run
              *
              * This is added as a safety feature to prevent infinite loops should something go wrong
@@ -113,6 +152,14 @@ namespace AI {
                 Card(Weapon w);
                 Card(Room r);
 
+                /**
+                 * \brief Constructs a card from the strings specified in the communication
+                 * protocol.
+                 * \note This is case-insensitive
+                 * \throw std::invalid_argument if the string is not a valid string for any card
+                 */
+                Card(std::string s);
+
                 enum Type {
                     PLAYER,
                     WEAPON,
@@ -129,6 +176,18 @@ namespace AI {
 
                 bool operator<(const Card& other) const;
                 bool operator==(const Card& other) const;
+
+                /**
+                 * \brief alias for str()
+                 */
+                operator std::string() const;
+
+                /**
+                 * \brief converts the card to the strings specified in the comms protocol.
+                 *
+                 * This will return the string with the first letter capitalized, e.g. Dagger
+                 */
+                std::string str() const;
             };
 
             /**
