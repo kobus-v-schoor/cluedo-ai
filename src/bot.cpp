@@ -1029,8 +1029,8 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccu
                 return getRoomPos(d.first);
 
         // if there is any unwanted rooms we can go in to, rather go there
-        /* if (!unwantedRooms.empty()) */
-        /*     return findBestUnwanted(); */
+        if (!unwantedRooms.empty())
+            return findBestUnwanted();
 
         // no rooms were found that was in reach, go towards the closest room
         return findClosestRoom();
