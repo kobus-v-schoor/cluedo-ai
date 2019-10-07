@@ -18,7 +18,7 @@ ai-test:
 ai-test-game:
     stage: test
     script:
-        - ai/test \[game\]
+        - ai/test [game]
 
 ai-build-doc:
     stage: deploy

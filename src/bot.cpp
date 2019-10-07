@@ -302,7 +302,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     for (int i = 0; i <= int(MAX_ROOM); i++)
         notes[player][Room(i)].lacks = true;
 
-    /* deductors.push_back(new LocalExcludeDeductor()); */
+    deductors.push_back(new LocalExcludeDeductor());
     deductors.push_back(new NoShowDeductor(order));
     /* deductors.push_back(new SeenDeductor()); */
 
