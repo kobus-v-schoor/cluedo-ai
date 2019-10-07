@@ -426,7 +426,10 @@ int Bot::getMove(int allowedMoves)
         int dest = board[this->player];
 
         // if we are already in a safe room, only change if the new destination is also a safe room
-        if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
+        if (board[this->player] == 0) {
+            LOG_LOGIC("moving out of envelope room regardless of dest");
+            dest = pos;
+        } else if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
                         getPosRoom(board[this->player]))) {
             if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
                 LOG_LOGIC("can move to another safe room from current safe room, moving there");
@@ -939,13 +942,13 @@ Bot::Room Bot::getPosRoom(int pos)
         case 9: return LIVING_ROOM;
     }
 
-    return COURTYARD;
+    throw std::invalid_argument("pos " + std::to_string(pos) + " is not a valid room position");
 }
 
 int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccupied)
 {
     // first check if we are already in a wanted room - if we are, remove it from the wanted list
-    if ((board[this->player] < Board::ROOM_COUNT) && contains(wanted,
+    if ((board[this->player] != 0) && (board[this->player] < Board::ROOM_COUNT) && contains(wanted,
                 getPosRoom(board[this->player])))
         wanted.erase(std::find(wanted.begin(), wanted.end(), getPosRoom(board[this->player])));
 

@@ -221,7 +221,7 @@ int run()
 
 TEST_CASE("game playthrough", "[.][game]") {
     unsigned int turns = 0;
-    const int runs = 1;
+    const int runs = 100;
     for (int i = 0; i < runs; i++)
         turns += run();
 
