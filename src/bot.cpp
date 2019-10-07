@@ -374,6 +374,7 @@ int Bot::getMove(int allowedMoves)
     auto safeRooms = getSafeRooms();
 
     auto forcedRoom = [&](Room room) {
+        LOG_LOGIC("forced into room, trying to optimize player and weapon choice");
         if (deck.players.empty() && deck.weapons.empty()) { // we know both, annoy a player
             curSuggestion.player = choosePlayerOffensive(order, room);
             curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
@@ -390,6 +391,8 @@ int Bot::getMove(int allowedMoves)
     };
 
     if (!envelope.haveRoom) {
+        LOG_LOGIC("searching for room");
+
         int pos = findNextMove(allowedMoves, deck.rooms, !OCCUPIED_BLOCKED);
 
         if (pos < Board::ROOM_COUNT) { // we're entering a room
@@ -414,23 +417,36 @@ int Bot::getMove(int allowedMoves)
 
         return pos;
     } else if (!envelope.havePlayer || !envelope.haveWeapon) {
+        if (envelope.havePlayer)
+            LOG_LOGIC("searching for player");
+        else
+            LOG_LOGIC("searching for weapon");
+
         int pos = findNextMove(allowedMoves, safeRooms, !OCCUPIED_BLOCKED);
         int dest = board[this->player];
 
         // if we are already in a safe room, only change if the new destination is also a safe room
         if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
                         getPosRoom(board[this->player]))) {
-            if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos)))
+            if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
+                LOG_LOGIC("can move to another safe room from current safe room, moving there");
                 dest = pos;
+            } else
+                LOG_LOGIC("staying in current room because we're unable to reach a safe room");
         } else { // we're not currently in a safe room
             // we're in the envelope room, so technically safe but we should move away from here if
             // we can get directly to another safe room to subvert suspicion
             if ((board[this->player] < Board::ROOM_COUNT) &&
                     (envelope.room == getPosRoom(board[this->player]))) {
-                if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos)))
+                if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
                     dest = pos;
-            } else // where not safe, go to the destination regardless
+                    LOG_LOGIC("moving away from envelope room to safe room");
+                } else
+                    LOG_LOGIC("staying in safe room");
+            } else { // where not safe, go to the destination regardless
                 dest = pos;
+                LOG_LOGIC("not in safe room, moving to new dest");
+            }
         }
 
 
@@ -443,6 +459,7 @@ int Bot::getMove(int allowedMoves)
 
             // new room is a safe room, we can isolate our wanted card
             if (contains(safeRooms, room)) {
+                LOG_LOGIC("we're in a safe room, making suggestion");
                 if (!envelope.havePlayer) { // we're looking for a player
                     curSuggestion.player = deck.players[0];
 
@@ -460,6 +477,7 @@ int Bot::getMove(int allowedMoves)
 
         return dest;
     } else { // we want to make an accusation
+        LOG_LOGIC("trying to get to middle room");
         std::vector<bool> occupied(Board::BOARD_SIZE, false);
         if (OCCUPIED_BLOCKED)
             for (auto p : board)
@@ -477,6 +495,7 @@ int Bot::getMove(int allowedMoves)
         int dest;
 
         if (blocked) { // we're blocked by another player
+            LOG_LOGIC("cannot get to middle room because we are blocked");
             blocked = false;
 
             // check if we can get around the blockage
@@ -486,26 +505,34 @@ int Bot::getMove(int allowedMoves)
                 blocked = true;
             }
 
-            if (blocked) // we're completely stuck, we need to stay where we are
+            if (blocked) { // we're completely stuck, we need to stay where we are
                 dest = board[this->player];
-            else // we can get around the blockage, get as far as we can
+                LOG_LOGIC("were completely blocked, staying in current position");
+            } else {// we can get around the blockage, get as far as we can
                 dest = path.partial(allowedMoves);
+                LOG_LOGIC("trying to get around blockage");
+            }
         } else // we're not blocked, try and get to the middle
             dest = path.partial(allowedMoves);
 
         if (dest == 0) { // we're going to middle, get ready to accuse
+            LOG_LOGIC("can reach middle room, going for accusation");
             haveSuggestion = true;
             curSuggestion.player = envelope.player;
             curSuggestion.weapon = envelope.weapon;
             curSuggestion.room = envelope.room;
         } else { // not reaching the middle just yet
+            LOG_LOGIC("cannot reach middle room yet");
             if (dest < Board::ROOM_COUNT) { // we're going through another room
+                LOG_LOGIC("moving to middle room through another");
                 haveSuggestion = true;
                 curSuggestion.room = getPosRoom(dest);
                 curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
                 curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
-            } else // we just on a tile
+            } else { // we just on a tile
+                LOG_LOGIC("getting as close as possible to middle room");
                 haveSuggestion = false;
+            }
         }
 
         return dest;
@@ -1003,6 +1030,7 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccu
     };
 
     if (dists.empty()) { // everything was blocked in some way
+        LOG_LOGIC("unable to reach any wanted room due to blockages");
         // first check if we can move at all
         bool fenced = true;
         for (auto n : start.getNeighbours()) {
@@ -1012,27 +1040,37 @@ int Bot::findNextMove(int allowedMoves, std::vector<Room> wanted, bool allowOccu
             break;
         }
 
-        if (fenced) // we're completely stuck, so just stay here
+        if (fenced) { // we're completely stuck, so just stay here
+            LOG_LOGIC("unable to move at all, staying put");
             return board[this->player];
+        }
 
         if (unwantedRooms.empty()) { // we cannot reach anything
+            LOG_LOGIC("unable to reach any rooms, moving towards closest room");
             // move towards the closest room
             return findClosestRoom();
         } else { // we can reach at least one unwanted room
+            LOG_LOGIC("can reach unwanted room, going towards best one");
             // move towards the unwanted room with the closest wanted room
             return findBestUnwanted();
         }
     } else { // some of the rooms were unblocked
         // first check if we can reach any of the rooms, if we can - go there
-        for (auto d : dists)
-            if (d.second <= allowedMoves)
+        for (auto d : dists) {
+            if (d.second <= allowedMoves) {
+                LOG_LOGIC("can reach a wanted room, going there");
                 return getRoomPos(d.first);
+            }
+        }
 
         // if there is any unwanted rooms we can go in to, rather go there
-        if (!unwantedRooms.empty())
+        if (!unwantedRooms.empty()) {
+            LOG_LOGIC("can reach unwanted room, going towards best one");
             return findBestUnwanted();
+        }
 
         // no rooms were found that was in reach, go towards the closest room
+        LOG_LOGIC("unable to reach any rooms, moving towards closest room");
         return findClosestRoom();
     }
 }
