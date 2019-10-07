@@ -10,9 +10,13 @@ ai-build:
     artifacts:
         paths:
             - ai/test
+ai-test:
+    stage: test
+    script:
+        - ai/test
 
 ai-build-doc:
-    stage: build
+    stage: deploy
     before_script:
         - apt update && apt -y install make doxygen graphviz
     script:
@@ -21,11 +25,6 @@ ai-build-doc:
     artifacts:
         paths:
             - ai/docs
-
-ai-test:
-    stage: test
-    script:
-        - ai/test
 
 ai-coverage:
     stage: deploy
