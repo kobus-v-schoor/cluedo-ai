@@ -13,6 +13,7 @@
 #include "../include/deductors/local-exclude.h"
 #include "../include/deductors/no-show.h"
 #include "../include/deductors/seen.h"
+#include "../include/deductors/card-count-exclude.h"
 
 // predictors
 #include "../include/deck.h"
@@ -305,6 +306,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     deductors.push_back(new LocalExcludeDeductor());
     deductors.push_back(new NoShowDeductor(order));
     deductors.push_back(new SeenDeductor());
+    deductors.push_back(new CardCountExclude());
 
     predictors.push_back(new SeenPredictor());
 }

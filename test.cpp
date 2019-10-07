@@ -11,6 +11,10 @@
 #include "include/deductors/local-exclude.h"
 #include "include/deductors/no-show.h"
 #include "include/deductors/seen.h"
+#include "include/deductors/card-count-exclude.h"
+
+//// predictors
+#include "include/predictors/seen.h"
 
 int main(int argc, char* argv[]) {
     // pre-test setup

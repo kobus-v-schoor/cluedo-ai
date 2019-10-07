@@ -56,6 +56,7 @@ test: \
  tests/board.o \
  tests/bot.o \
  tests/game.o \
+ tests/deductors/card-count-exclude.o \
  tests/deductors/no-show.o \
  tests/deductors/seen.o \
  tests/deductors/local-exclude.o \
@@ -65,12 +66,13 @@ test: \
  src/board.o \
  src/bot.o \
  src/predictor.o \
+ src/deductors/card-count-exclude.o \
  src/deductors/no-show.o \
  src/deductors/seen.o \
  src/deductors/local-exclude.o \
  src/position.o \
  src/deck.o
-	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o -o test
+	g++ $(gf) test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/card-count-exclude.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/card-count-exclude.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o -o test
 
 test.o: \
  test.cpp \
@@ -80,8 +82,12 @@ test.o: \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
  include/deductors/seen.h \
+ include/deductors/card-count-exclude.h \
+ include/predictors/seen.h \
  include/macros.h \
- include/deductor.h
+ include/deductor.h \
+ include/predictor.h \
+ include/deck.h
 	$(go) test.cpp -o test.o
 
 tests/predictors/seen.o: \
@@ -116,6 +122,15 @@ tests/game.o: \
  include/macros.h \
  include/position.h
 	$(go) tests/game.cpp -o tests/game.o
+
+tests/deductors/card-count-exclude.o: \
+ tests/deductors/card-count-exclude.cpp \
+ include/deductors/card-count-exclude.h \
+ include/deductor.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) tests/deductors/card-count-exclude.cpp -o tests/deductors/card-count-exclude.o
 
 tests/deductors/no-show.o: \
  tests/deductors/no-show.cpp \
@@ -182,6 +197,7 @@ src/bot.o: \
  include/deductors/local-exclude.h \
  include/deductors/no-show.h \
  include/deductors/seen.h \
+ include/deductors/card-count-exclude.h \
  include/deck.h \
  include/predictor.h \
  include/predictors/seen.h \
@@ -197,6 +213,15 @@ src/predictor.o: \
  include/macros.h \
  include/position.h
 	$(go) src/predictor.cpp -o src/predictor.o
+
+src/deductors/card-count-exclude.o: \
+ src/deductors/card-count-exclude.cpp \
+ include/deductors/card-count-exclude.h \
+ include/deductor.h \
+ include/bot.h \
+ include/macros.h \
+ include/position.h
+	$(go) src/deductors/card-count-exclude.cpp -o src/deductors/card-count-exclude.o
 
 src/deductors/no-show.o: \
  src/deductors/no-show.cpp \
@@ -247,10 +272,10 @@ gdb: debug
 	gdb test
 
 clean:
-	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o ai.tar.gz test
+	rm -f test.o tests/predictors/seen.o tests/board.o tests/bot.o tests/game.o tests/deductors/card-count-exclude.o tests/deductors/no-show.o tests/deductors/seen.o tests/deductors/local-exclude.o tests/position.o tests/deck.o src/predictors/seen.o src/board.o src/bot.o src/predictor.o src/deductors/card-count-exclude.o src/deductors/no-show.o src/deductors/seen.o src/deductors/local-exclude.o src/position.o src/deck.o ai.tar.gz test
 
 tar:
-	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/macros.h include/deductor.h tests/predictors/seen.cpp include/predictors/seen.h include/predictor.h include/deck.h tests/board.cpp tests/bot.cpp include/tests.h tests/game.cpp tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp tests/deck.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp src/deck.cpp makefile -f ai.tar.gz
+	tar -chvz test.cpp include/bot.h include/position.h include/board.h include/deductors/local-exclude.h include/deductors/no-show.h include/deductors/seen.h include/deductors/card-count-exclude.h include/predictors/seen.h include/macros.h include/deductor.h include/predictor.h include/deck.h tests/predictors/seen.cpp tests/board.cpp tests/bot.cpp include/tests.h tests/game.cpp tests/deductors/card-count-exclude.cpp tests/deductors/no-show.cpp tests/deductors/seen.cpp tests/deductors/local-exclude.cpp tests/position.cpp tests/deck.cpp src/predictors/seen.cpp src/board.cpp src/bot.cpp src/predictor.cpp src/deductors/card-count-exclude.cpp src/deductors/no-show.cpp src/deductors/seen.cpp src/deductors/local-exclude.cpp src/position.cpp src/deck.cpp makefile -f ai.tar.gz
 
 doc:
 	doxygen doxyfile
