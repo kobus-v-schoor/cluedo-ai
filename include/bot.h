@@ -459,7 +459,7 @@ namespace AI {
             void newTurn();
 
             /**
-             * This is mostly meant for unit testing to inspect the notes of the AI as it is playing
+             * \brief Used to get a copy of the current notes of the bot
              * \returns the notes the bot has made so far
              */
             std::map<Player, std::map<Card, Notes>> getNotes();

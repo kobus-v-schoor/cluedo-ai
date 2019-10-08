@@ -55,6 +55,7 @@ Bot::Room getPosRoom(int pos)
 
 int run()
 {
+    // make a deck of all the cards
     std::vector<Bot::Card> cards;
 
     for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
@@ -70,6 +71,7 @@ int run()
 
     const unsigned int CARDS_PER_PLAYER = (CARD_COUNT - 3 - TABLE_CARDS) / PLAYER_COUNT;
 
+    // choose the order for the players
     std::vector<Bot::Player> order;
 
     for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
@@ -87,6 +89,7 @@ int run()
 
     order = norder;
 
+    // choose the envelope cards
     Bot::Player envelopePlayer = Bot::Player(rand() % (int(Bot::MAX_PLAYER) + 1));
     Bot::Weapon envelopeWeapon = Bot::Weapon(rand() % (int(Bot::MAX_WEAPON) + 1));
     Bot::Room envelopeRoom = Bot::Room(rand() % (int(Bot::MAX_ROOM) + 1));
@@ -99,6 +102,7 @@ int run()
     REQUIRE_FALSE(contains(cards, Bot::Card(envelopeWeapon)));
     REQUIRE_FALSE(contains(cards, Bot::Card(envelopeRoom)));
 
+    // select the deck of cards for each player
     std::map<Bot::Player, std::vector<Bot::Card>> decks;
 
     for (auto p : order) {
@@ -120,37 +124,44 @@ int run()
         return b;
     };
 
+    // create the players
+
     for (auto p : order)
-        board[p] = 0;
+        board[p] = 0; // all players start in the middle room
 
     for (auto p : order) {
         players[p] = new Bot(p, order);
-        players[p]->setCards(decks[p]);
-        players[p]->setCards(cards, true);
+        players[p]->setCards(decks[p]); // player's cards
+        players[p]->setCards(cards, true); // table cards
         players[p]->updateBoard(genBoard());
     }
 
+
+    // play the game
     bool done = false;
     unsigned int curIndex = 0;
     unsigned int turns = 0;
 
     while (!done) {
+        // select current player and dice roll
         Bot::Player cur = order[curIndex];
         int dice = 2 + (rand() % 11);
         int pos = players[cur]->getMove(dice);
 
+        // check that the player gave a valid move
         Position start(board[cur]);
         Position end(pos);
 
         REQUIRE(int(start.path(end, 1)) <= dice);
 
+        // move player (updates all the bots)
         for (auto o : order)
             players[o]->movePlayer(cur, pos);
         board[cur] = pos;
 
-        if (pos < Board::ROOM_COUNT) {
-            Bot::Suggestion sug = players[cur]->getSuggestion();
-            if (pos == 0) {
+        if (pos < Board::ROOM_COUNT) { // going in to a room
+            Bot::Suggestion sug = players[cur]->getSuggestion(); // get the suggestion
+            if (pos == 0) { // it's making an accusation
                 REQUIRE(sug.player == envelopePlayer);
                 REQUIRE(sug.weapon == envelopeWeapon);
                 REQUIRE(sug.room == envelopeRoom);
@@ -161,10 +172,13 @@ int run()
 
             REQUIRE(sug.room == getPosRoom(pos));
 
+            // notify all the players that the currently active bot made a suggestion (note that the
+            // current bot is skipped)
             for (auto o : order)
                 if (cur != o)
                     players[o]->madeSuggestion(cur, sug);
 
+            // determine what player can show a card(s)
             std::vector<Bot::Card> show;
             Bot::Player other;
             for (unsigned int i = curIndex + 1; i != curIndex; i++) {
@@ -187,21 +201,22 @@ int run()
                 }
             }
 
-            if (show.empty()) {
-                players[cur]->noShowCard();
-                for (auto o : order)
+            if (show.empty()) { // nobody could show a card
+                players[cur]->noShowCard(); // notify the currently active bot
+                for (auto o : order) // notify all the others (note the current bot is skipped)
                     if (o != cur)
                         players[o]->noOtherShownCard();
-            } else {
+            } else { // somebody could show a card
                 Bot::Card c(cur);
-                if (show.size() > 1) {
+                if (show.size() > 1) { // multiple cards to choose from, ask bot to show one
                     c = players[other]->getCard(cur, show);
                     REQUIRE(contains(show, c));
                 } else
                     c = show[0];
 
-                players[cur]->showCard(other, c);
+                players[cur]->showCard(other, c); // show the card to the active bot
 
+                // notify all the other bots (note that the current bot is skipped)
                 for (auto o : order)
                     if (o != cur)
                         players[o]->otherShownCard(other);
@@ -211,6 +226,10 @@ int run()
 
         curIndex = (curIndex + 1) % PLAYER_COUNT;
         turns++;
+
+        // notify all the bots that a new turn is starting
+        for (auto o : order)
+            players[o]->newTurn();
     }
 
     for (auto p : order)

@@ -14,18 +14,14 @@ namespace AI {
      * Once we calculate how many cards every player has, we can mark all other cards lacking once
      * we have have marked the player has the amount of cards dealt to them
      */
-    class CardCountExclude : public Deductor {
+    class CardCountExcludeDeductor : public Deductor {
         public:
-            CardCountExclude(){}
+            CardCountExcludeDeductor(std::vector<Bot::Player> order);
 
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
         private:
-            /**
-             * If true, it will use the amount of players in the order to calculate the amount of
-             * cards dealt to every player. If false, it will use the notes to determine the cards
-             * dealt to this player and assume everybody has the same amount of cards as us
-             */
-            static const bool useOrderForCount = true;
+            std::vector<Bot::Player> order;
+            static std::vector<Bot::Card> allCards;
     };
 }
 
