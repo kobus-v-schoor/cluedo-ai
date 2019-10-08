@@ -38,8 +38,8 @@ bool CardCountExcludeDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
         if (cc >= cardsPerPlayer) {
             for (auto c : allCards) {
                 if (!notes[player][c].has && !notes[player][c].lacks) {
-                    LOG_LOGIC("Deduced that " << player << " lacks " << c <<
-                            " (card-count-exclude)");
+                    LOG_LOGIC("Deduced that " + Bot::playerToStr(player) + " lacks " +
+                            std::string(c) + " (card-count-exclude)");
                     notes[player][c].lacks = true;
                     found = true;
                 }

@@ -39,7 +39,6 @@
  */
 #define LOG_FORMAT __FILE__ << "(" << __LINE__ << "): "
 
-
 #ifdef NO_LOGGING
     #define LOG_LOGIC(msg) do {} while(0)
     #define LOG_ERR(msg) do {} while(0)
@@ -58,8 +57,20 @@
     #ifdef NO_LOGIC_LOGGING
         #define LOG_LOGIC(msg) do {} while(0)
     #else
-        #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
+        #define LOG_LOGIC(msg) LOG_LOGIC_CALLBACK(std::string(msg))
     #endif
+#endif
+
+/**
+ * \def LOG_LOGIC_CALLBACK
+ * \brief Used to define a "callback" that will execute instead of writing the logic logs to std out
+ *
+ * You can define this macro to take one argument. The argument is guaranteed to be a std::string.
+ * You can then use this to change how to logic logging takes place
+ */
+
+#ifndef LOG_LOGIC_CALLBACK
+    #define LOG_LOGIC_CALLBACK(msg) std::cout << LOG_FORMAT << msg << std::endl
 #endif
 
 // vim: set expandtab textwidth=100:

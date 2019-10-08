@@ -217,6 +217,12 @@ bool Bot::Suggestion::operator==(const Suggestion& other)
     return (player == other.player) && (weapon == other.weapon) && (room == other.room);
 }
 
+Bot::Suggestion::operator std::string()
+{
+    return "P: " + Bot::playerToStr(player) + " W: " + Bot::weaponToStr(weapon) + " R: " +
+        Bot::roomToStr(room);
+}
+
 bool Bot::Notes::concluded()
 {
     return has || lacks;
@@ -567,7 +573,7 @@ Bot::Suggestion Bot::getSuggestion()
     if (!haveSuggestion)
         throw std::runtime_error("Suggestion hasn't been set because getMove wasn't called before "
                 "getSuggestion() or we're currently outside of a room");
-    LOG_LOGIC("Making suggestion " << curSuggestion);
+    LOG_LOGIC("Making suggestion " + std::string(curSuggestion));
     haveSuggestion = false;
     weMadeSuggestion = true;
     return curSuggestion;
@@ -707,7 +713,7 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.player = Player(i);
                 envelope.havePlayer = true;
-                LOG_LOGIC("SOLVED: " << envelope.player << " is the envelope player (all-lacks)");
+                LOG_LOGIC("SOLVED: " + playerToStr(envelope.player) + " is the envelope player (all-lacks)");
                 break;
             }
         }
@@ -739,7 +745,7 @@ bool Bot::findEnvelope()
             if (noHas) {
                 envelope.player = noHasPlayer;
                 envelope.havePlayer = true;
-                LOG_LOGIC("SOLVED: " << envelope.player << " is the envelope player (no-has)");
+                LOG_LOGIC("SOLVED: " + playerToStr(envelope.player) + " is the envelope player (no-has)");
             }
         }
     }
@@ -757,7 +763,7 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.weapon = Weapon(i);
                 envelope.haveWeapon = true;
-                LOG_LOGIC("SOLVED: " << envelope.weapon << " is the envelope weapon (all-lacks)");
+                LOG_LOGIC("SOLVED: " + weaponToStr(envelope.weapon) + " is the envelope weapon (all-lacks)");
                 break;
             }
         }
@@ -789,7 +795,7 @@ bool Bot::findEnvelope()
             if (noHas) {
                 envelope.weapon = noHasWeapon;
                 envelope.haveWeapon = true;
-                LOG_LOGIC("SOLVED: " << envelope.weapon << " is the envelope weapon (no-has)");
+                LOG_LOGIC("SOLVED: " + weaponToStr(envelope.weapon) + " is the envelope weapon (no-has)");
             }
         }
     }
@@ -807,7 +813,7 @@ bool Bot::findEnvelope()
             if (!found) {
                 envelope.room = Room(i);
                 envelope.haveRoom = true;
-                LOG_LOGIC("SOLVED: " << envelope.room << " is the envelope room (all-lacks)");
+                LOG_LOGIC("SOLVED: " + roomToStr(envelope.room) + " is the envelope room (all-lacks)");
                 break;
             }
         }
@@ -839,7 +845,7 @@ bool Bot::findEnvelope()
             if (noHas) {
                 envelope.room = noHasRoom;
                 envelope.haveRoom = true;
-                LOG_LOGIC("SOLVED: " << envelope.room << " is the envelope room (no-has)");
+                LOG_LOGIC("SOLVED: " + roomToStr(envelope.room) + " is the envelope room (no-has)");
             }
         }
     }
@@ -1154,69 +1160,6 @@ Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room ro
         return std::max_element(seenCount.begin(), seenCount.end(),
                 [](std::pair<Player, int> a, std::pair<Player, int> b) {
                 return a.second < b.second; })->first;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player)
-{
-    switch (player) {
-        case Bot::SCARLET: ostream << "SCARLET"; break;
-        case Bot::PLUM: ostream << "PLUM"; break;
-        case Bot::PEACOCK: ostream << "PEACOCK"; break;
-        case Bot::GREEN: ostream << "GREEN"; break;
-        case Bot::MUSTARD: ostream << "MUSTARD"; break;
-        case Bot::WHITE: ostream << "WHITE"; break;
-    }
-
-    return ostream;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Weapon weapon)
-{
-    switch (weapon) {
-        case Bot::CANDLESTICK: ostream << "CANDLESTICK"; break;
-        case Bot::KNIFE: ostream << "KNIFE"; break;
-        case Bot::LEAD_PIPE: ostream << "LEAD_PIPE"; break;
-        case Bot::REVOLVER: ostream << "REVOLVER"; break;
-        case Bot::ROPE: ostream << "ROPE"; break;
-        case Bot::SPANNER: ostream << "SPANNER"; break;
-    }
-
-    return ostream;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room)
-{
-    switch (room) {
-        case Bot::BEDROOM: ostream << "BEDROOM"; break;
-        case Bot::BATHROOM: ostream << "BATHROOM"; break;
-        case Bot::STUDY: ostream << "STUDY"; break;
-        case Bot::KITCHEN: ostream << "KITCHEN"; break;
-        case Bot::DINING_ROOM: ostream << "DINING_ROOM"; break;
-        case Bot::LIVING_ROOM: ostream << "LIVING_ROOM"; break;
-        case Bot::COURTYARD: ostream << "COURTYARD"; break;
-        case Bot::GARAGE: ostream << "GARAGE"; break;
-        case Bot::GAMES_ROOM: ostream << "GAMES_ROOM"; break;
-    }
-
-    return ostream;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Card card)
-{
-    switch (card.type) {
-        case Bot::Card::PLAYER: ostream << Bot::Player(card.card); break;
-        case Bot::Card::WEAPON: ostream << Bot::Weapon(card.card); break;
-        case Bot::Card::ROOM: ostream << Bot::Room(card.card); break;
-    }
-
-    return ostream;
-}
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion)
-{
-    ostream << "(P: " << suggestion.player << ", W: " << suggestion.weapon << ", R: " <<
-        suggestion.room << ")";
-    return ostream;
 }
 
 // vim: set expandtab textwidth=100:

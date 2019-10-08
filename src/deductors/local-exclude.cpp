@@ -22,19 +22,22 @@ bool LocalExcludeDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
         if ((notes[l.show][sug.player].lacks && notes[l.show][sug.weapon].lacks) &&
                 !notes[l.show][sug.room].concluded()) {
             found = true;
-            LOG_LOGIC("Deduced that " << l.show << " has " << sug.room << " (local-exclude)");
+            LOG_LOGIC("Deduced that " + Bot::playerToStr(l.show) + " has " +
+                    Bot::roomToStr(sug.room) + " (local-exclude)");
             notes[l.show][sug.room].has = true;
             notes[l.show][sug.room].deduced = true;
         } else if ((notes[l.show][sug.player].lacks && notes[l.show][sug.room].lacks) &&
                 !notes[l.show][sug.weapon].concluded()) {
             found = true;
-            LOG_LOGIC("Deduced that " << l.show << " has " << sug.weapon << " (local-exclude)");
+            LOG_LOGIC("Deduced that " + Bot::playerToStr(l.show) + " has " +
+                    Bot::weaponToStr(sug.weapon) + " (local-exclude)");
             notes[l.show][sug.weapon].has = true;
             notes[l.show][sug.weapon].deduced = true;
         } else if ((notes[l.show][sug.weapon].lacks && notes[l.show][sug.room].lacks) &&
                 !notes[l.show][sug.player].concluded()) {
             found = true;
-            LOG_LOGIC("Deduced that " << l.show << " has " << sug.player << " (local-exclude)");
+            LOG_LOGIC("Deduced that " + Bot::playerToStr(l.show) + " has " +
+                    Bot::playerToStr(sug.player) + " (local-exclude)");
             notes[l.show][sug.player].has = true;
             notes[l.show][sug.player].deduced = true;
         }

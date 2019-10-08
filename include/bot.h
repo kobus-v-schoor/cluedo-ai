@@ -208,6 +208,7 @@ namespace AI {
                 Suggestion(Player p, Weapon w, Room r);
 
                 bool operator==(const Suggestion& other);
+                operator std::string();
 
                 Player player;
                 Weapon weapon;
@@ -646,11 +647,5 @@ namespace AI {
             std::mutex lock;
     };
 }
-
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Player player);
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Weapon weapon);
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Room room);
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Card card);
-std::ostream& operator<<(std::ostream& ostream, const AI::Bot::Suggestion suggestion);
 
 // vim: set expandtab textwidth=100:

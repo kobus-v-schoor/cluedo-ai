@@ -54,7 +54,8 @@ bool NoShowDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
                     Bot::Card(l.suggestion.room) }) {
                 if (!notes[order[pos]][c].concluded()) {
                     found = true;
-                    LOG_LOGIC("Deduced that " << order[pos] << " lacks " << c << " (no-show)");
+                    LOG_LOGIC("Deduced that " + Bot::playerToStr(order[pos]) + " lacks " +
+                            std::string(c) + " (no-show)");
                     notes[order[pos]][c].lacks = true;
                 }
             }

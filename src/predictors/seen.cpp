@@ -18,15 +18,15 @@ void SeenPredictor::run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bo
 
         if (notes[l.from][sug.player].seen && notes[l.from][sug.weapon].seen &&
                 !notes[l.from][sug.room].seen && contains(deck, sug.room)) {
-            LOG_LOGIC("Identified " << sug.room << " as a low probability card");
+            LOG_LOGIC("Identified " + Bot::roomToStr(sug.room) + " as a low probability card");
             deck.scores[sug.room]++;
         } else if (notes[l.from][sug.player].seen && notes[l.from][sug.room].seen &&
                 !notes[l.from][sug.weapon].seen && contains(deck, sug.weapon)) {
-            LOG_LOGIC("Identified " << sug.weapon << " as a low probability card");
+            LOG_LOGIC("Identified " + Bot::weaponToStr(sug.weapon) + " as a low probability card");
             deck.scores[sug.weapon]++;
         } else if (notes[l.from][sug.weapon].seen && notes[l.from][sug.room].seen &&
                 !notes[l.from][sug.player].seen && contains(deck, sug.player)) {
-            LOG_LOGIC("Identified " << sug.player << " as a low probability card");
+            LOG_LOGIC("Identified " + Bot::playerToStr(sug.player) + " as a low probability card");
             deck.scores[sug.player]++;
         }
     }
