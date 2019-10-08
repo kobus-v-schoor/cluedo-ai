@@ -15,7 +15,7 @@
 namespace AI {
     class Deductor;
     class Predictor;
-    class Deck;
+    struct Deck;
 
     /**
      * \brief The main AI class - clients and servers will spawn and use only this class.

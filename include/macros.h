@@ -33,6 +33,35 @@
 #define BREAK std::raise(SIGINT);
 
 #include <iostream>
+#include <vector>
+#include <string>
+
+namespace AI {
+    class LogicLog {
+        public:
+            /**
+             * \brief Add a line to the log
+             */
+            static void addLog(std::string msg);
+
+            /**
+             * \brief Returns all the log lines since the last time this function was called
+             */
+            static std::vector<std::string> readFromLast();
+
+            /**
+             * \brief Returns the full log
+             */
+            static std::vector<std::string> readFull();
+
+        private:
+            static std::vector<std::string> log;
+            static int lastPos;
+    };
+
+    __attribute__((unused))
+    static LogicLog logicLog;
+}
 
 /**
  * \brief This is the prefix that is added to all log messages
@@ -57,20 +86,16 @@
     #ifdef NO_LOGIC_LOGGING
         #define LOG_LOGIC(msg) do {} while(0)
     #else
-        #define LOG_LOGIC(msg) LOG_LOGIC_CALLBACK(std::string(msg))
+        /**
+         * \def LOG_LOGIC_TO_COUT
+         * \brief If defined, all logic logging will be sent directly to std out
+         */
+        #ifdef LOG_LOGIC_TO_COUT
+            #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
+        #else
+            #define LOG_LOGIC(msg) AI::logicLog.addLog(std::string(msg))
+        #endif
     #endif
-#endif
-
-/**
- * \def LOG_LOGIC_CALLBACK
- * \brief Used to define a "callback" that will execute instead of writing the logic logs to std out
- *
- * You can define this macro to take one argument. The argument is guaranteed to be a std::string.
- * You can then use this to change how to logic logging takes place
- */
-
-#ifndef LOG_LOGIC_CALLBACK
-    #define LOG_LOGIC_CALLBACK(msg) std::cout << LOG_FORMAT << msg << std::endl
 #endif
 
 // vim: set expandtab textwidth=100:
