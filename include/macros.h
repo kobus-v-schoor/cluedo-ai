@@ -32,58 +32,34 @@
 #include <csignal>
 #define BREAK std::raise(SIGINT);
 
+#include <iostream>
+
 /**
- * \def TESTING
- * \brief Used to disable all logging
- *
- * By defining TESTING (preferably using a compiler flag) all logging will be disable to keep unit
- * tests output coherent
+ * \brief This is the prefix that is added to all log messages
  */
+#define LOG_FORMAT __FILE__ << "(" << __LINE__ << "): "
 
-#ifndef TESTING
-    #include <iostream>
 
-    /**
-     * \brief This is the prefix that is added to all log messages
-     */
-    #define LOG_FORMAT __FILE__ << "(" << __LINE__ << "): "
-
+#ifdef NO_LOGGING
+    #define LOG_LOGIC(msg) do {} while(0)
+    #define LOG_ERR(msg) do {} while(0)
+#else
     /**
      * \brief Used to log serious error messages that should not be ignored
      *
      * All these log messages will be printed to stderr
      */
-    #define LOG_ERR(msg) std::cerr << LOG_FORMAT << msg << std::endl
-
-
-    #ifndef AI_NO_LOG_LOGIC
-        /**
-         * \brief Used to log messages about logic decisions being made
-         *
-         * These messages can be disabled by defining AI_NO_LOG_LOGIC
-         */
-        #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
-    #endif
+    #define LOG_ERR(msg) std::cerr << "\033[1;31mERROR: " << LOG_FORMAT << msg << "\033[0m" << std::endl
 
     /**
-     * \def LOG_INFO
-     * \brief Can be used to log informational messages
-     *
-     * The macro will automatically be disabled when compiling with AI_RELEASE being defined (e.g. using
-     * compiler flags)
+     * \def NO_LOGIC_LOGGING
+     * \brief If defined, the AI won't output any logic messages
      */
-
-    #ifdef AI_RELEASE
-        // the do while gets optimized as a noop
-        #define LOG_INFO(msg) do {} while(0)
+    #ifdef NO_LOGIC_LOGGING
+        #define LOG_LOGIC(msg) do {} while(0)
     #else
-        #define LOG_INFO(msg) std::cout << LOG_FORMAT << msg << std::endl
+        #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
     #endif
-#else
-    // all these will get optimized as a noop
-    #define LOG_INFO(msg) do {} while(0)
-    #define LOG_LOGIC(msg) do {} while(0)
-    #define LOG_ERR(msg) do {} while(0)
 #endif
 
 // vim: set expandtab textwidth=100:
