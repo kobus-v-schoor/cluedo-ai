@@ -414,13 +414,13 @@ TEST_CASE("Bot class", "[bot]") {
 
             for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
                 if (Bot::Player(i) != envelopePlayer)
-                    bot.showCard(other1, Bot::Player(i));
+                    bot.setCards({ Bot::Player(i)}, true);
             for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
                 if (Bot::Weapon(i) != envelopeWeapon)
-                    bot.showCard(other1, Bot::Weapon(i));
+                    bot.setCards({ Bot::Weapon(i)});
             for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
                 if (Bot::Room(i) != envelopeRoom)
-                    bot.showCard(other1, Bot::Room(i));
+                    bot.setCards({ Bot::Room(i) });
 
             Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
 
