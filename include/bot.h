@@ -10,6 +10,7 @@
 #include <utility>
 #include <map>
 #include <ostream>
+#include <mutex>
 
 namespace AI {
     class Deductor;
@@ -638,6 +639,11 @@ namespace AI {
              * \brief Used to mark that a suggestion has been made
              */
             bool weMadeSuggestion = false;
+
+            /**
+             * \brief Used to lock class members while they are being modified
+             */
+            std::mutex lock;
     };
 }
 

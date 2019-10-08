@@ -291,6 +291,8 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     order(order),
     curSuggestion(Player(0), Weapon(0), Room(0))
 {
+    std::lock_guard<std::mutex> l(lock);
+
     // creates a notes entry for every player
     for (auto o : order)
         notes[o];
@@ -321,6 +323,8 @@ Bot::~Bot()
 
 void Bot::setCards(const std::vector<Card> cards, bool tableCards)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     for (auto c : cards) {
         notes[player][c].has = true;
         notes[player][c].lacks = false;
@@ -337,6 +341,8 @@ void Bot::setCards(const std::vector<Card> cards, bool tableCards)
 
 void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     board.clear();
     for (auto p : players)
         board[p.first] = p.second;
@@ -344,28 +350,38 @@ void Bot::updateBoard(const std::vector<std::pair<Player, Position>> players)
 
 void Bot::movePlayer(const Player player, Position position)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     board[player] = position;
 }
 
 void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     log.addSuggestion(player, suggestion);
 }
 
 void Bot::otherShownCard(Player showed)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     log.addShow(showed);
     notesHook(true);
 }
 
 void Bot::noOtherShownCard()
 {
+    std::lock_guard<std::mutex> l(lock);
+
     log.addNoShow();
     notesHook(true);
 }
 
 int Bot::getMove(int allowedMoves)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     Deck deck = getWantedDeck();
     runPredictors(deck);
 
@@ -546,6 +562,8 @@ int Bot::getMove(int allowedMoves)
 
 Bot::Suggestion Bot::getSuggestion()
 {
+    std::lock_guard<std::mutex> l(lock);
+
     if (!haveSuggestion)
         throw std::runtime_error("Suggestion hasn't been set because getMove wasn't called before "
                 "getSuggestion() or we're currently outside of a room");
@@ -557,6 +575,8 @@ Bot::Suggestion Bot::getSuggestion()
 
 void Bot::showCard(Player player, Card card)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
     if (weMadeSuggestion) {
@@ -569,6 +589,8 @@ void Bot::showCard(Player player, Card card)
 
 void Bot::noShowCard()
 {
+    std::lock_guard<std::mutex> l(lock);
+
     if (weMadeSuggestion) {
         log.addSuggestion(this->player, curSuggestion);
         log.addNoShow();
@@ -579,6 +601,8 @@ void Bot::noShowCard()
 
 Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
 {
+    std::lock_guard<std::mutex> l(lock);
+
     // check if we can find a card that the player has already seen
     for (auto c : cards)
         if (notes[player][c].seen)
@@ -605,11 +629,15 @@ Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
 
 void Bot::newTurn()
 {
+    std::lock_guard<std::mutex> l(lock);
+
     log.clear();
 }
 
 std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> Bot::getNotes()
 {
+    std::lock_guard<std::mutex> l(lock);
+
     return notes;
 }
 
