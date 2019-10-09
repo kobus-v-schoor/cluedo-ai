@@ -255,10 +255,14 @@ TEST_CASE("game playthrough", "[.][game]") {
     std::cout << "minimum turns needed to finish game: " << turns.begin()->first << std::endl;
     std::cout << "maximum turns needed to finish game: " << turns.rbegin()->first << std::endl;
 
-    std::cout << "===============\n";
-    for (auto t : turns)
-        std::cout << t.first << ": " << t.second << "\t(" << t.second * 100 / double(runs) << "%)\n";
-    std::cout << "===============\n";
+    total = 0;
+    std::cout << "=========================\n";
+    for (auto t : turns) {
+        total += t.second;
+        std::cout << t.first << ": " << t.second << "\t(" << t.second * 100 / double(runs) <<
+            "%)\t(" << total * 100 / double(runs) << "%)\n";
+    }
+    std::cout << "=========================\n";
 }
 
 // vim: set expandtab textwidth=100:
