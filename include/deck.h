@@ -30,6 +30,11 @@ namespace AI {
          * to lower probability (higher score)
          */
         void sort();
+
+        /**
+         * \brief returns true if the given card is in one of the decks
+         */
+        bool contains(Bot::Card card);
     };
 };
 

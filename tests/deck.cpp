@@ -33,6 +33,23 @@ TEST_CASE("Deck struct", "[deck]") {
         REQUIRE_THAT(deck.rooms, Equals(std::vector<Bot::Room>({ Bot::BATHROOM, Bot::BEDROOM,
                         Bot::STUDY})));
     }
+
+    SECTION("contains") {
+        Deck deck;
+
+        deck.players = { Bot::SCARLET, Bot::PLUM, Bot::PEACOCK };
+        deck.weapons = { Bot::CANDLESTICK, Bot::KNIFE, Bot::LEAD_PIPE };
+        deck.rooms = { Bot::BEDROOM, Bot::BATHROOM, Bot::STUDY };
+
+        REQUIRE(deck.contains(Bot::PLUM));
+        REQUIRE_FALSE(deck.contains(Bot::GREEN));
+
+        REQUIRE(deck.contains(Bot::KNIFE));
+        REQUIRE_FALSE(deck.contains(Bot::REVOLVER));
+
+        REQUIRE(deck.contains(Bot::BATHROOM));
+        REQUIRE_FALSE(deck.contains(Bot::GAMES_ROOM));
+    }
 }
 
 // vim: set expandtab textwidth=100:

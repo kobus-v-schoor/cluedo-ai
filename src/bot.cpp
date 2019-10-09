@@ -19,6 +19,7 @@
 #include "../include/deck.h"
 #include "../include/predictor.h"
 #include "../include/predictors/seen.h"
+#include "../include/predictors/multiple.h"
 
 using namespace AI;
 
@@ -317,6 +318,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     deductors.push_back(new CardCountExcludeDeductor(order));
 
     predictors.push_back(new SeenPredictor());
+    predictors.push_back(new MultiplePredictor());
 }
 
 Bot::~Bot()
