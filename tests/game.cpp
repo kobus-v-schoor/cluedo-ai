@@ -142,11 +142,14 @@ int run()
     unsigned int curIndex = 0;
     unsigned int turns = 0;
 
+    std::map<Bot::Player, int> tc;
+
     while (!done) {
         // select current player and dice roll
         Bot::Player cur = order[curIndex];
         int dice = 2 + (rand() % 11);
         int pos = players[cur]->getMove(dice);
+        tc[cur]++;
 
         // check that the player gave a valid move
         Position start(board[cur]);
@@ -235,16 +238,27 @@ int run()
     for (auto p : order)
         delete players[p];
 
-    return turns;
+    return tc[order[curIndex]];
 }
 
 TEST_CASE("game playthrough", "[.][game]") {
-    unsigned int turns = 0;
-    const int runs = 100;
+    std::map<int, int> turns;
+    const int runs = 1000;
     for (int i = 0; i < runs; i++)
-        turns += run();
+        turns[run()]++;
 
-    std::cout << "average turns needed to finish game: " << turns / runs << std::endl;
+    int total = 0;
+    for (auto t : turns)
+        total += t.first * t.second;
+
+    std::cout << "average turns needed to finish game: " << total / double(runs) << std::endl;
+    std::cout << "minimum turns needed to finish game: " << turns.begin()->first << std::endl;
+    std::cout << "maximum turns needed to finish game: " << turns.rbegin()->first << std::endl;
+
+    std::cout << "===============\n";
+    for (auto t : turns)
+        std::cout << t.first << ": " << t.second << "\t(" << t.second * 100 / double(runs) << "%)\n";
+    std::cout << "===============\n";
 }
 
 // vim: set expandtab textwidth=100:
