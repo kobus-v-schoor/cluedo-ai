@@ -175,6 +175,14 @@ int run()
 
             REQUIRE(sug.room == getPosRoom(pos));
 
+            // move the player in the suggestion to the suggestion room
+            if (contains(order, sug.player)) {
+                for (auto o : order) {
+                    players[o]->movePlayer(sug.player, getRoomPos(sug.room));
+                }
+                board[sug.player] = getRoomPos(sug.room);
+            }
+
             // notify all the players that the currently active bot made a suggestion (note that the
             // current bot is skipped)
             for (auto o : order)
