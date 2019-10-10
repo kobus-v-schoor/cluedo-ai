@@ -133,6 +133,7 @@ TEST_CASE("Bot class", "[bot]") {
             Bot::Card c(Bot::playerToStr(p));
             REQUIRE(c.type == Bot::Card::PLAYER);
             REQUIRE(c.card == i);
+            REQUIRE(Bot::playerToStr(p) == Bot::enumToStr(p));
         }
 
         for (int i = 0; i <= int(Bot::MAX_WEAPON); i++) {
@@ -142,6 +143,7 @@ TEST_CASE("Bot class", "[bot]") {
             Bot::Card c(Bot::weaponToStr(w));
             REQUIRE(c.type == Bot::Card::WEAPON);
             REQUIRE(c.card == i);
+            REQUIRE(Bot::weaponToStr(w) == Bot::enumToStr(w));
         }
 
         for (int i = 0; i <= int(Bot::MAX_ROOM); i++) {
@@ -151,6 +153,7 @@ TEST_CASE("Bot class", "[bot]") {
             Bot::Card c(Bot::roomToStr(r));
             REQUIRE(c.type == Bot::Card::ROOM);
             REQUIRE(c.card == i);
+            REQUIRE(Bot::roomToStr(r) == Bot::enumToStr(r));
         }
 
         REQUIRE_THROWS_AS(Bot::strToPlayer("exception"), std::invalid_argument&);

@@ -147,6 +147,21 @@ std::string Bot::roomToStr(Room r)
     return "";
 }
 
+std::string Bot::enumToStr(Player p)
+{
+    return playerToStr(p);
+}
+
+std::string Bot::enumToStr(Weapon w)
+{
+    return weaponToStr(w);
+}
+
+std::string Bot::enumToStr(Room r)
+{
+    return roomToStr(r);
+}
+
 Bot::Card::Card(Bot::Player p):
     card(int(p)),
     type(Card::Type::PLAYER)

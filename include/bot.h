@@ -120,6 +120,21 @@ namespace AI {
             static std::string roomToStr(Room r);
 
             /**
+             * \brief Alias for playerToStr
+             */
+            static std::string enumToStr(Player p);
+
+            /**
+             * \brief Alias for weaponToStr
+             */
+            static std::string enumToStr(Weapon w);
+
+            /**
+             * \brief Alias for roomToStr
+             */
+            static std::string enumToStr(Room r);
+
+            /**
              * \brief Maximum amount of times the deductor loop can run
              *
              * This is added as a safety feature to prevent infinite loops should something go wrong
