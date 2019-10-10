@@ -383,6 +383,8 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
     std::lock_guard<std::mutex> l(lock);
 
     log.addSuggestion(player, suggestion);
+    if (contains(order, suggestion.player))
+        movePlayer(suggestion.player, getRoomPos(suggestion.room));
 }
 
 void Bot::otherShownCard(Player showed)

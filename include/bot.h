@@ -400,6 +400,8 @@ namespace AI {
              * \param accuse Set to true if the suggestion was a wrong accusation
              * \note Remember to call the otherShownCard() or noOtherShownCard() function after
              * using this function to notify the AI if another player was able to show a card!
+             * \note The bot will automatically move the player in the suggestion to the suggestion
+             * room
              */
             void madeSuggestion(Player player, Suggestion suggestion, bool accuse = false);
 
