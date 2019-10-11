@@ -53,7 +53,386 @@ Bot::Room getPosRoom(int pos)
     return Bot::COURTYARD;
 }
 
-int run()
+/**
+ * \brief A reference bot
+ *
+ * This bot doesn't implement any fancy deductions or predictions, nor does it look at the history
+ * of the game. This bot is a more realistic representation of how a human player will play. It
+ * still follows a set strategy, it just doesn't extract as much information from the game as the
+ * actual AI.
+ */
+class DumbBot
+{
+    public:
+        DumbBot(Bot::Player player) :
+            player(player),
+            pos(0)
+        {
+            for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                notes[Bot::Player(i)] = false;
+            for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                notes[Bot::Weapon(i)] = false;
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                notes[Bot::Room(i)] = false;
+        }
+
+        Bot::Suggestion getSuggestion()
+        {
+            Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
+            if (pos == 0) {
+                sug.player = envelopePlayer;
+                sug.weapon = envelopeWeapon;
+                sug.room = envelopeRoom;
+            } else {
+                auto safePlayers = getSafePlayers();
+                auto safeWeapons = getSafeWeapons();
+                auto wantedPlayers = getWantedPlayers();
+                auto wantedWeapons = getWantedWeapons();
+
+                sug.room = getPosRoom(pos);
+
+                if (!haveRoom) {
+                    if (safePlayers.empty())
+                        sug.player = wantedPlayers[rand() % wantedPlayers.size()];
+                    else
+                        sug.player = safePlayers[rand() % safePlayers.size()];
+
+                    if (safeWeapons.empty())
+                        sug.weapon = wantedWeapons[rand() %  wantedWeapons.size()];
+                    else
+                        sug.weapon = safeWeapons[rand() % safeWeapons.size()];
+                } else if (!havePlayer) {
+                    sug.player = wantedPlayers[rand() % wantedPlayers.size()];
+
+                    if (safeWeapons.empty())
+                        sug.weapon = wantedWeapons[rand() %  wantedWeapons.size()];
+                    else
+                        sug.weapon = safeWeapons[rand() % safeWeapons.size()];
+                } else {
+                    sug.player = safePlayers[rand() % safePlayers.size()];
+                    sug.weapon = wantedWeapons[rand() %  wantedWeapons.size()];
+                }
+            }
+
+            curSug = sug;
+            return sug;
+        }
+
+        int getMove(int moves)
+        {
+            auto findRoom = [&](std::vector<Bot::Room> wanted) {
+                for (auto w : wanted)
+                    if (Position(this->pos).path(getRoomPos(w)) <= moves)
+                        return getRoomPos(w);
+
+                Bot::Room minRoom = wanted[0];
+                int dist = Position(this->pos).path(getRoomPos(wanted[0]));
+
+                for (auto w : wanted) {
+                    int d = Position(this->pos).path(getRoomPos(w));
+                    if (d < dist) {
+                        dist = d;
+                        minRoom = w;
+                    }
+                }
+
+                return Position(pos).path(getRoomPos(minRoom)).partial(moves);
+            };
+
+            if (!haveRoom) {
+                return findRoom(getWantedRooms());
+            } else if (!havePlayer || !haveWeapon) {
+                return findRoom(getSafeRooms());
+            } else {
+                return Position(pos).path(0).partial(moves);
+            }
+        }
+
+        void setCards(std::vector<Bot::Card> cards)
+        {
+            for (auto c : cards) {
+                notes[c] = true;
+                set.push_back(c);
+            }
+            findEnvelope();
+        }
+
+        void showCard(Bot::Card card)
+        {
+            notes[card] = true;
+            findEnvelope();
+        }
+
+        void move(int p)
+        {
+            this->pos = p;
+        }
+
+        void noShowCard()
+        {
+            if (!haveRoom && !contains(set, Bot::Card(curSug.room))) {
+                haveRoom = true;
+                envelopeRoom = curSug.room;
+            }
+
+            if (!haveWeapon && !contains(set, Bot::Card(curSug.weapon))) {
+                haveWeapon = true;
+                envelopeWeapon = curSug.weapon;
+            }
+
+            if (!havePlayer && !contains(set, Bot::Card(curSug.player))) {
+                havePlayer = true;
+                envelopePlayer = curSug.player;
+            }
+        }
+
+        Bot::Card getCard(std::vector<Bot::Card> cards)
+        {
+            return cards[rand() % cards.size()];
+        }
+
+    private:
+        template <typename T>
+        std::pair<bool, T> finder(T max)
+        {
+            bool found = false;
+            T envc;
+            for (int i = 0; i <= int(max); i++) {
+                T c = T(i);
+                if (!notes[c]) {
+                    if (!found) {
+                        found = true;
+                        envc = c;
+                    } else {
+                        found = false;
+                        break;
+                    }
+                }
+            }
+
+            return std::make_pair(found, envc);
+        }
+
+        void findEnvelope()
+        {
+            if (!haveRoom) {
+                auto p = finder(Bot::MAX_ROOM);
+                haveRoom = p.first;
+                envelopeRoom = p.second;
+            }
+
+            if (!haveWeapon) {
+                auto p = finder(Bot::MAX_WEAPON);
+                haveWeapon = p.first;
+                envelopeWeapon = p.second;
+            }
+
+            if (!havePlayer) {
+                auto p = finder(Bot::MAX_PLAYER);
+                havePlayer = p.first;
+                envelopePlayer = p.second;
+            }
+        }
+
+        std::vector<Bot::Room> getWantedRooms()
+        {
+            std::vector<Bot::Room> wanted;
+            for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                if (!notes[Bot::Room(i)])
+                    wanted.push_back(Bot::Room(i));
+
+            return wanted;
+        }
+
+        std::vector<Bot::Player> getWantedPlayers()
+        {
+            std::vector<Bot::Player> wanted;
+            for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                if (!notes[Bot::Player(i)])
+                    wanted.push_back(Bot::Player(i));
+
+            return wanted;
+        }
+
+        std::vector<Bot::Weapon> getWantedWeapons()
+        {
+            std::vector<Bot::Weapon> wanted;
+            for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                if (!notes[Bot::Weapon(i)])
+                    wanted.push_back(Bot::Weapon(i));
+
+            return wanted;
+        }
+
+        std::vector<Bot::Room> getSafeRooms()
+        {
+            std::vector<Bot::Room> safe;
+            for (auto c : set)
+                if (c.type == Bot::Card::ROOM)
+                    safe.push_back(Bot::Room(c.card));
+
+            if (safe.empty() && haveRoom)
+                safe.push_back(envelopeRoom);
+
+            return safe;
+        }
+
+        std::vector<Bot::Weapon> getSafeWeapons()
+        {
+            std::vector<Bot::Weapon> safe;
+            for (auto c : set)
+                if (c.type == Bot::Card::WEAPON)
+                    safe.push_back(Bot::Weapon(c.card));
+
+            if (safe.empty() && haveWeapon)
+                safe.push_back(envelopeWeapon);
+
+            return safe;
+        }
+
+        std::vector<Bot::Player> getSafePlayers()
+        {
+            std::vector<Bot::Player> safe;
+            for (auto c : set)
+                if (c.type == Bot::Card::PLAYER)
+                    safe.push_back(Bot::Player(c.card));
+
+            if (safe.empty() && havePlayer)
+                safe.push_back(envelopePlayer);
+
+            return safe;
+        }
+
+        std::map<Bot::Card, bool> notes;
+        std::vector<Bot::Card> set;
+        Bot::Player player;
+        int pos;
+        Bot::Player envelopePlayer;
+        bool havePlayer = false;
+        Bot::Weapon envelopeWeapon;
+        bool haveWeapon = false;
+        Bot::Room envelopeRoom;
+        bool haveRoom = false;
+        Bot::Suggestion curSug = Bot::Suggestion(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
+};
+
+class Player {
+    public:
+        Player(Bot::Player p, std::vector<Bot::Player> order, bool dumb) :
+            player(p)
+        {
+            this->dumb = dumb;
+            if (dumb)
+                dbot = new DumbBot(p);
+            else
+                bot = new Bot(p, order);
+        }
+
+        ~Player()
+        {
+            delete bot;
+            delete dbot;
+        }
+
+        void setCards(std::vector<Bot::Card> cards, bool table = false)
+        {
+            if (dumb)
+                dbot->setCards(cards);
+            else
+                bot->setCards(cards, table);
+        }
+
+        void updateBoard(std::vector<std::pair<Bot::Player, Position>> players)
+        {
+            if (!dumb)
+                bot->updateBoard(players);
+        }
+
+        int getMove(int dice)
+        {
+            if (dumb)
+                return dbot->getMove(dice);
+            else
+                return bot->getMove(dice);
+        }
+
+        void movePlayer(Bot::Player p, int pos)
+        {
+            if (dumb) {
+                if (player == p)
+                    dbot->move(pos);
+            } else
+                bot->movePlayer(p, pos);
+        }
+
+        Bot::Suggestion getSuggestion()
+        {
+            if (dumb)
+                return dbot->getSuggestion();
+            else
+                return bot->getSuggestion();
+        }
+
+        void madeSuggestion(Bot::Player player, Bot::Suggestion sug)
+        {
+            if (dumb) {
+                if (sug.player == this->player)
+                    dbot->move(getRoomPos(sug.room));
+            } else
+                bot->madeSuggestion(player, sug);
+        }
+
+        void noShowCard()
+        {
+            if (dumb)
+                dbot->noShowCard();
+            else
+                bot->noShowCard();
+        }
+
+        void noOtherShownCard()
+        {
+            if (!dumb)
+                bot->noOtherShownCard();
+        }
+
+        Bot::Card getCard(Bot::Player p, std::vector<Bot::Card> cards)
+        {
+            if (dumb)
+                return dbot->getCard(cards);
+            else
+                return bot->getCard(p, cards);
+        }
+
+        void showCard(Bot::Player player, Bot::Card card)
+        {
+            if (dumb)
+                dbot->showCard(card);
+            else
+                bot->showCard(player, card);
+        }
+
+        void otherShownCard(Bot::Player other)
+        {
+            if (!dumb)
+                bot->otherShownCard(other);
+        }
+
+        void newTurn()
+        {
+            if (!dumb)
+                bot->newTurn();
+        }
+
+
+    private:
+        bool dumb;
+        DumbBot* dbot = nullptr;
+        Bot* bot = nullptr;
+        Bot::Player player;
+};
+
+std::pair<bool, int> run()
 {
     // make a deck of all the cards
     std::vector<Bot::Card> cards;
@@ -113,7 +492,7 @@ int run()
         }
     }
 
-    std::map<Bot::Player, Bot*> players;
+    std::map<Bot::Player, Player*> players;
 
     std::map<Bot::Player, int> board;
 
@@ -129,13 +508,15 @@ int run()
     for (auto p : order)
         board[p] = 0; // all players start in the middle room
 
+    Bot::Player smart = order[rand() % order.size()];
+    bool wrong;
+
     for (auto p : order) {
-        players[p] = new Bot(p, order);
+        players[p] = new Player(p, order, p != smart);
         players[p]->setCards(decks[p]); // player's cards
         players[p]->setCards(cards, true); // table cards
         players[p]->updateBoard(genBoard());
     }
-
 
     // play the game
     bool done = false;
@@ -168,6 +549,8 @@ int run()
                 REQUIRE(sug.player == envelopePlayer);
                 REQUIRE(sug.weapon == envelopeWeapon);
                 REQUIRE(sug.room == envelopeRoom);
+
+                wrong = cur != smart;
 
                 done = true;
                 break;
@@ -241,22 +624,45 @@ int run()
     for (auto p : order)
         delete players[p];
 
-    return tc[order[curIndex]];
+    return std::make_pair(!wrong, tc[order[curIndex]]);
 }
 
 TEST_CASE("game playthrough", "[.][game]") {
     std::map<int, int> turns;
-    const int runs = 1000;
-    for (int i = 0; i < runs; i++)
-        turns[run()]++;
+    int runs = 1000;
+    int lost = 0;
+    for (int i = 0; i < runs; i++) {
+        auto t = run();
+        if (t.first)
+            turns[t.second]++;
+        else
+            lost++;
+    }
+
+    runs -= lost;
 
     int total = 0;
-    for (auto t : turns)
+    int perc = 0;
+    int third;
+    bool tset = false;
+    for (auto t : turns) {
         total += t.first * t.second;
+        perc += t.second;
+        if (((perc * 100 / runs) >= 75) && !tset) {
+            third = t.first;
+            tset = true;
+        }
+    }
 
+    std::cout << std::setprecision(3);
+
+    double won = double(runs) * 100 / (runs + lost);
+
+    std::cout << "games won: " << runs << " (" << won << "%) (x" << won / 20 << " better than reference)\n";
     std::cout << "average turns needed to finish game: " << total / double(runs) << std::endl;
     std::cout << "minimum turns needed to finish game: " << turns.begin()->first << std::endl;
     std::cout << "maximum turns needed to finish game: " << turns.rbegin()->first << std::endl;
+    std::cout << "third percentile: " << third << " moves needed" << std::endl;
 
     total = 0;
     std::cout << "=========================\n";
