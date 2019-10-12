@@ -63,10 +63,13 @@ namespace AI {
     static LogicLog logicLog;
 }
 
+#include <string.h>
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 /**
  * \brief This is the prefix that is added to all log messages
  */
-#define LOG_FORMAT __FILE__ << "(" << __LINE__ << "): "
+#define LOG_FORMAT __FILENAME__ << "(" << __LINE__ << "): "
 
 #ifdef NO_LOGGING
     #define LOG_LOGIC(msg) do {} while(0)
