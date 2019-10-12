@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <thread>
 #include "../include/bot.h"
 #include "../include/board.h"
 
@@ -432,7 +433,11 @@ class Player {
         Bot::Player player;
 };
 
-std::pair<bool, int> run()
+std::mutex catchLock;
+std::mutex runLock;
+std::vector<std::pair<bool, int>> runLog;
+
+void run()
 {
     // make a deck of all the cards
     std::vector<Bot::Card> cards;
@@ -477,9 +482,12 @@ std::pair<bool, int> run()
     erase(cards, Bot::Card(envelopeWeapon));
     erase(cards, Bot::Card(envelopeRoom));
 
-    REQUIRE_FALSE(contains(cards, Bot::Card(envelopePlayer)));
-    REQUIRE_FALSE(contains(cards, Bot::Card(envelopeWeapon)));
-    REQUIRE_FALSE(contains(cards, Bot::Card(envelopeRoom)));
+    {
+        std::lock_guard<std::mutex> l(catchLock);
+        REQUIRE_FALSE(contains(cards, Bot::Card(envelopePlayer)));
+        REQUIRE_FALSE(contains(cards, Bot::Card(envelopeWeapon)));
+        REQUIRE_FALSE(contains(cards, Bot::Card(envelopeRoom)));
+    }
 
     // select the deck of cards for each player
     std::map<Bot::Player, std::vector<Bot::Card>> decks;
@@ -536,7 +544,10 @@ std::pair<bool, int> run()
         Position start(board[cur]);
         Position end(pos);
 
-        REQUIRE(int(start.path(end, 1)) <= dice);
+        {
+            std::lock_guard<std::mutex> l(catchLock);
+            REQUIRE(int(start.path(end, 1)) <= dice);
+        }
 
         // move player (updates all the bots)
         for (auto o : order)
@@ -546,9 +557,12 @@ std::pair<bool, int> run()
         if (pos < Board::ROOM_COUNT) { // going in to a room
             Bot::Suggestion sug = players[cur]->getSuggestion(); // get the suggestion
             if (pos == 0) { // it's making an accusation
-                REQUIRE(sug.player == envelopePlayer);
-                REQUIRE(sug.weapon == envelopeWeapon);
-                REQUIRE(sug.room == envelopeRoom);
+                {
+                    std::lock_guard<std::mutex> l(catchLock);
+                    REQUIRE(sug.player == envelopePlayer);
+                    REQUIRE(sug.weapon == envelopeWeapon);
+                    REQUIRE(sug.room == envelopeRoom);
+                }
 
                 wrong = cur != smart;
 
@@ -556,7 +570,10 @@ std::pair<bool, int> run()
                 break;
             }
 
-            REQUIRE(sug.room == getPosRoom(pos));
+            {
+                std::lock_guard<std::mutex> l(catchLock);
+                REQUIRE(sug.room == getPosRoom(pos));
+            }
 
             // move the player in the suggestion to the suggestion room
             if (contains(order, sug.player))
@@ -599,7 +616,10 @@ std::pair<bool, int> run()
                 Bot::Card c(cur);
                 if (show.size() > 1) { // multiple cards to choose from, ask bot to show one
                     c = players[other]->getCard(cur, show);
-                    REQUIRE(contains(show, c));
+                    {
+                        std::lock_guard<std::mutex> l(catchLock);
+                        REQUIRE(contains(show, c));
+                    }
                 } else
                     c = show[0];
 
@@ -623,15 +643,35 @@ std::pair<bool, int> run()
     for (auto p : order)
         delete players[p];
 
-    return std::make_pair(!wrong, tc[order[curIndex]]);
+    runLock.lock();
+    runLog.push_back(std::make_pair(!wrong, tc[order[curIndex]]));
+    runLock.unlock();
+}
+
+void runLoop(int count)
+{
+    for (int i = 0; i < count; i++)
+        run();
 }
 
 TEST_CASE("game playthrough", "[.][game]") {
-    std::map<int, int> turns;
     int runs = 1000;
     int lost = 0;
-    for (int i = 0; i < runs; i++) {
-        auto t = run();
+    int conc = std::thread::hardware_concurrency();
+    int tpc = runs / conc;
+
+    std::vector<std::thread*> threads;
+
+    for (int i = 0; i < conc; i++)
+        threads.push_back(new std::thread(runLoop, tpc));
+
+    for (auto t : threads) {
+        t->join();
+        delete t;
+    }
+
+    std::map<int, int> turns;
+    for (auto t : runLog) {
         if (t.first)
             turns[t.second]++;
         else
