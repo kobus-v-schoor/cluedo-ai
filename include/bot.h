@@ -468,6 +468,7 @@ namespace AI {
              * \param player The player that made the suggestion
              * \param cards The cards that the AI has to choose from as specified by the server
              *
+             * \throw std::invalid_argument if no valid cards are given
              * \returns the card to show to the other player
              */
             Card getCard(Player player, std::vector<Card> cards);

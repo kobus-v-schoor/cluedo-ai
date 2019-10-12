@@ -636,6 +636,9 @@ Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
 
     cards = ncs;
 
+    if (cards.empty())
+        throw std::invalid_argument("getCard called with no valid cards");
+
     // check if we can find a card that the player has already seen
     for (auto c : cards)
         if (notes[player][c].seen)
