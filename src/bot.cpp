@@ -929,11 +929,16 @@ std::vector<Bot::Player> Bot::getSafePlayers()
     std::vector<Player> players;
 
     for (int i = 0; i <= int(MAX_PLAYER); i++)
-        if (notes[player][Player(i)].has) // && notes[player][Player(i)].table)
+        if (notes[player][Player(i)].has && !notes[player][Player(i)].table)
             players.push_back(Player(i));
 
     if (players.empty() && envelope.havePlayer)
         players.push_back(envelope.player);
+
+    if (players.empty())
+        for (int i = 0; i <= int(MAX_PLAYER); i++)
+            if (!notes[player][Player(i)].table)
+                players.push_back(Player(i));
 
     return players;
 }
@@ -943,11 +948,16 @@ std::vector<Bot::Weapon> Bot::getSafeWeapons()
     std::vector<Weapon> weapons;
 
     for (int i = 0; i <= int(MAX_WEAPON); i++)
-        if (notes[player][Weapon(i)].has) // && notes[player][Weapon(i)].table)
+        if (notes[player][Weapon(i)].has && !notes[player][Weapon(i)].table)
             weapons.push_back(Weapon(i));
 
     if (weapons.empty() && envelope.haveWeapon)
         weapons.push_back(envelope.weapon);
+
+    if (weapons.empty())
+        for (int i = 0; i <= int(MAX_WEAPON); i++)
+            if (!notes[player][Weapon(i)].table)
+                weapons.push_back(Weapon(i));
 
     return weapons;
 }
@@ -957,11 +967,16 @@ std::vector<Bot::Room> Bot::getSafeRooms()
     std::vector<Room> rooms;
 
     for (int i = 0; i <= int(MAX_ROOM); i++)
-        if (notes[player][Room(i)].has) // && notes[player][Room(i)].has)
+        if (notes[player][Room(i)].has && !notes[player][Room(i)].table)
             rooms.push_back(Room(i));
 
     if (rooms.empty() && envelope.haveRoom)
         rooms.push_back(envelope.room);
+
+    if (rooms.empty())
+        for (int i = 0; i <= int(MAX_ROOM); i++)
+            if (!notes[player][Room(i)].table)
+                rooms.push_back(Room(i));
 
     return rooms;
 }
