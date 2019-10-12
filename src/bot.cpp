@@ -391,7 +391,8 @@ void Bot::otherShownCard(Player showed)
 {
     std::lock_guard<std::mutex> l(lock);
 
-    log.addShow(showed);
+    if (log.waiting())
+        log.addShow(showed);
     notesHook(true);
 }
 
@@ -399,7 +400,8 @@ void Bot::noOtherShownCard()
 {
     std::lock_guard<std::mutex> l(lock);
 
-    log.addNoShow();
+    if (log.waiting())
+        log.addNoShow();
     notesHook(true);
 }
 
@@ -605,7 +607,8 @@ void Bot::showCard(Player player, Card card)
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
     if (weMadeSuggestion) {
-        log.addSuggestion(this->player, curSuggestion);
+        if (!log.waiting())
+            log.addSuggestion(this->player, curSuggestion);
         log.addShow(player);
         weMadeSuggestion = false;
     }
@@ -617,7 +620,8 @@ void Bot::noShowCard()
     std::lock_guard<std::mutex> l(lock);
 
     if (weMadeSuggestion) {
-        log.addSuggestion(this->player, curSuggestion);
+        if (!log.waiting())
+            log.addSuggestion(this->player, curSuggestion);
         log.addNoShow();
         notesHook(true);
         weMadeSuggestion = false;

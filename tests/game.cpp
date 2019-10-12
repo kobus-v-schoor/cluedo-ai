@@ -565,8 +565,7 @@ std::pair<bool, int> run()
             // notify all the players that the currently active bot made a suggestion (note that the
             // current bot is skipped)
             for (auto o : order)
-                if (cur != o)
-                    players[o]->madeSuggestion(cur, sug);
+                players[o]->madeSuggestion(cur, sug);
 
             // determine what player can show a card(s)
             std::vector<Bot::Card> show;
