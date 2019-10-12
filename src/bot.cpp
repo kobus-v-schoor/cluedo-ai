@@ -628,6 +628,14 @@ Bot::Card Bot::getCard(Player player, std::vector<Card> cards)
 {
     std::lock_guard<std::mutex> l(lock);
 
+    std::vector<Bot::Card> ncs;
+
+    for (auto c : cards)
+        if (notes[this->player][c].has && !notes[this->player][c].table)
+            ncs.push_back(c);
+
+    cards = ncs;
+
     // check if we can find a card that the player has already seen
     for (auto c : cards)
         if (notes[player][c].seen)
