@@ -384,7 +384,7 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
 
     log.addSuggestion(player, suggestion);
     if (contains(order, suggestion.player))
-        movePlayer(suggestion.player, getRoomPos(suggestion.room));
+        board[suggestion.player] = getRoomPos(suggestion.room);
 }
 
 void Bot::otherShownCard(Player showed)
