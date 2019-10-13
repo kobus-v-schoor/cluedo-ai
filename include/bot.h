@@ -650,11 +650,6 @@ namespace AI {
             Suggestion curSuggestion;
 
             /**
-             * \brief Used to mark that curSuggestion has been set to a valid value
-             */
-            bool haveSuggestion = false;
-
-            /**
              * \brief Used to mark that a suggestion has been made
              */
             bool weMadeSuggestion = false;

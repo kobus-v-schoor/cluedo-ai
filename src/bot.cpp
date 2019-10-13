@@ -413,7 +413,106 @@ int Bot::getMove(int allowedMoves)
 
     Deck deck = getWantedDeck();
     runPredictors(deck);
+    deck.sort();
 
+    if (!envelope.haveRoom) {
+        LOG_LOGIC("moving to find room");
+        return findNextMove(allowedMoves, deck.rooms, !OCCUPIED_BLOCKED);
+    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
+        LOG_LOGIC("moving to find weapon or player");
+
+        auto safeRooms = getSafeRooms();
+        int pos = findNextMove(allowedMoves, safeRooms, !OCCUPIED_BLOCKED);
+        int dest = board[this->player];
+
+        // if we are already in a safe room, only change if the new destination is also a safe room
+        if (board[this->player] == 0) {
+            LOG_LOGIC("moving out of middle room regardless of planned destination");
+            dest = pos;
+        } else if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
+                    getPosRoom(board[this->player]))) {
+            if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
+                LOG_LOGIC("can move to another safe room from current safe room, moving there");
+                dest = pos;
+            } else
+                LOG_LOGIC("staying in current room because we're unable to reach a safe room");
+        } else { // we're not currently in a safe room
+            // we're in the envelope room, so technically safe but we should move away from here if
+            // we can get directly to another safe room to subvert suspicion
+            if ((board[this->player] < Board::ROOM_COUNT) &&
+                    (envelope.room == getPosRoom(board[this->player]))) {
+                if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
+                    dest = pos;
+                    LOG_LOGIC("moving away from envelope room to safe room");
+                } else
+                    LOG_LOGIC("staying in safe (envelope) room");
+            } else { // where not safe, go to the destination regardless
+                dest = pos;
+                LOG_LOGIC("not in safe room, moving to new destination");
+            }
+        }
+
+        return dest;
+    } else {
+        std::vector<bool> occupied(Board::BOARD_SIZE, false);
+        if (OCCUPIED_BLOCKED)
+            for (auto p : board)
+                occupied[p.second] = true;
+
+        int pos = board[this->player];
+        Position::Path path(pos);
+        bool blocked = false;
+
+        try {
+            path = Position(pos).path(0, occupied, 1);
+        } catch (std::runtime_error&) { // we're blocked
+            blocked = true;
+        }
+
+        int dest;
+
+        if (blocked) { // we're blocked by another player
+            LOG_LOGIC("cannot get to middle room because we are blocked");
+            blocked = false;
+
+            // check if we can get around the blockage
+            try {
+                path = Position(pos).path(0, occupied, Board::ROOM_COUNT);
+            } catch (std::runtime_error&) {
+                blocked = true;
+            }
+
+            if (blocked) { // we're completely stuck, we need to stay where we are
+                dest = pos;
+                LOG_LOGIC("were completely blocked, staying in current position");
+            } else {// we can get around the blockage, get as far as we can
+                dest = path.partial(allowedMoves);
+                LOG_LOGIC("trying to get around blockage");
+            }
+        } else { // we're not blocked, try and get to the middle
+            LOG_LOGIC("we are not blocked, trying to reach middle room");
+            dest = path.partial(allowedMoves);
+        }
+
+        return dest;
+    }
+}
+
+Bot::Suggestion Bot::getSuggestion()
+{
+    std::lock_guard<std::mutex> l(lock);
+
+    int pos = board[this->player];
+
+    if (pos >= Board::ROOM_COUNT)
+        throw std::runtime_error("cannot make suggestion if not in room (current pos " +
+                std::to_string(pos) + ")");
+
+    if ((pos == 0) && !(envelope.havePlayer && envelope.haveWeapon && envelope.haveRoom))
+        LOG_ERR("Being forced to make accusation before ready");
+
+    Deck deck = getWantedDeck();
+    runPredictors(deck);
     deck.sort();
 
     auto safePlayers = getSafePlayers();
@@ -431,173 +530,66 @@ int Bot::getMove(int allowedMoves)
         } else if (deck.weapons.empty()) { // we know the weapon, choose a good player
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-        } else { // we don't anything, choose good player and weapon
+        } else { // we don't know anything, choose good player and weapon
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = deck.weapons[0];
         }
     };
 
     if (!envelope.haveRoom) {
-        LOG_LOGIC("searching for room");
+        LOG_LOGIC("making suggestion to find room");
+        Room room = getPosRoom(pos);
+        curSuggestion.room = room;
 
-        int pos = findNextMove(allowedMoves, deck.rooms, !OCCUPIED_BLOCKED);
+        if (contains(deck.rooms, room)) { // we're entering a wanted room
+            LOG_LOGIC("entering a wanted room, trying to isolate room card");
+            if (safePlayers.empty())
+                curSuggestion.player = deck.players[0];
+            else
+                curSuggestion.player = choosePlayerOffensive(safePlayers, room);
 
-        if (pos < Board::ROOM_COUNT) { // we're entering a room
-            Room room = getPosRoom(pos);
-            curSuggestion.room = room;
-            haveSuggestion = true;
+            if (safeWeapons.empty())
+                curSuggestion.weapon = deck.weapons[0];
+            else
+                curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+        } else // we're entering an unwanted room
+            forcedRoom(room);
+    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
+        LOG_LOGIC("making suggestion to find player or weapon");
+        Room room = getPosRoom(pos);
+        curSuggestion.room = room;
 
-            if (contains(deck.rooms, room)) { // we're entering a wanted room
-                if (safePlayers.empty())
-                    curSuggestion.player = deck.players[0];
-                else
-                    curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+        // new room is a safe room, we can isolate our wanted card
+        if (contains(safeRooms, room)) {
+            LOG_LOGIC("entering a safe room, trying to isolate player or weapon card");
+            if (!envelope.havePlayer) { // we're looking for a player
+                curSuggestion.player = deck.players[0];
 
                 if (safeWeapons.empty())
                     curSuggestion.weapon = deck.weapons[0];
                 else
                     curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-            } else // we're entering an unwanted room
-                forcedRoom(room);
-        } else // we're going/staying to a tile
-            haveSuggestion = false;
-
-        return pos;
-    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
-        if (envelope.havePlayer)
-            LOG_LOGIC("searching for player");
-        else
-            LOG_LOGIC("searching for weapon");
-
-        int pos = findNextMove(allowedMoves, safeRooms, !OCCUPIED_BLOCKED);
-        int dest = board[this->player];
-
-        // if we are already in a safe room, only change if the new destination is also a safe room
-        if (board[this->player] == 0) {
-            LOG_LOGIC("moving out of envelope room regardless of dest");
-            dest = pos;
-        } else if ((board[this->player] < Board::ROOM_COUNT) && contains(safeRooms,
-                        getPosRoom(board[this->player]))) {
-            if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
-                LOG_LOGIC("can move to another safe room from current safe room, moving there");
-                dest = pos;
-            } else
-                LOG_LOGIC("staying in current room because we're unable to reach a safe room");
-        } else { // we're not currently in a safe room
-            // we're in the envelope room, so technically safe but we should move away from here if
-            // we can get directly to another safe room to subvert suspicion
-            if ((board[this->player] < Board::ROOM_COUNT) &&
-                    (envelope.room == getPosRoom(board[this->player]))) {
-                if ((pos < Board::ROOM_COUNT) && contains(safeRooms, getPosRoom(pos))) {
-                    dest = pos;
-                    LOG_LOGIC("moving away from envelope room to safe room");
-                } else
-                    LOG_LOGIC("staying in safe room");
-            } else { // where not safe, go to the destination regardless
-                dest = pos;
-                LOG_LOGIC("not in safe room, moving to new dest");
+            } else { // we're looking for a weapon
+                curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+                curSuggestion.weapon = deck.weapons[0];
             }
-        }
-
-
-        if (dest >= Board::ROOM_COUNT) { // new destination isn't a room
-            haveSuggestion = false;
-        } else {
-            Room room = getPosRoom(dest);
-            curSuggestion.room = room;
-            haveSuggestion = true;
-
-            // new room is a safe room, we can isolate our wanted card
-            if (contains(safeRooms, room)) {
-                LOG_LOGIC("we're in a safe room, making suggestion");
-                if (!envelope.havePlayer) { // we're looking for a player
-                    curSuggestion.player = deck.players[0];
-
-                    if (safeWeapons.empty())
-                        curSuggestion.weapon = deck.weapons[0];
-                    else
-                        curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-                } else { // we're looking for a weapon
-                    curSuggestion.player = choosePlayerOffensive(safePlayers, room);
-                    curSuggestion.weapon = deck.weapons[0];
-                }
-            } else // we're entering an unwanted room
-                forcedRoom(room);
-        }
-
-        return dest;
-    } else { // we want to make an accusation
-        LOG_LOGIC("trying to get to middle room");
-        std::vector<bool> occupied(Board::BOARD_SIZE, false);
-        if (OCCUPIED_BLOCKED)
-            for (auto p : board)
-                occupied[p.second] = true;
-
-        Position::Path path(board[this->player]);
-        bool blocked = false;
-
-        try {
-            path = Position(board[this->player]).path(0, occupied, 1);
-        } catch (std::runtime_error&) { // we're blocked
-            blocked = true;
-        }
-
-        int dest;
-
-        if (blocked) { // we're blocked by another player
-            LOG_LOGIC("cannot get to middle room because we are blocked");
-            blocked = false;
-
-            // check if we can get around the blockage
-            try {
-                path = Position(board[this->player]).path(0, occupied, Board::ROOM_COUNT);
-            } catch (std::runtime_error&) {
-                blocked = true;
-            }
-
-            if (blocked) { // we're completely stuck, we need to stay where we are
-                dest = board[this->player];
-                LOG_LOGIC("were completely blocked, staying in current position");
-            } else {// we can get around the blockage, get as far as we can
-                dest = path.partial(allowedMoves);
-                LOG_LOGIC("trying to get around blockage");
-            }
-        } else // we're not blocked, try and get to the middle
-            dest = path.partial(allowedMoves);
-
-        if (dest == 0) { // we're going to middle, get ready to accuse
-            LOG_LOGIC("can reach middle room, going for accusation");
-            haveSuggestion = true;
+        } else // we're entering an unwanted room
+            forcedRoom(room);
+    } else {
+        LOG_LOGIC("ready to accuse");
+        if (pos == 0) {
+            LOG_LOGIC("in middle room, making accusation");
             curSuggestion.player = envelope.player;
             curSuggestion.weapon = envelope.weapon;
             curSuggestion.room = envelope.room;
-        } else { // not reaching the middle just yet
-            LOG_LOGIC("cannot reach middle room yet");
-            if (dest < Board::ROOM_COUNT) { // we're going through another room
-                LOG_LOGIC("moving to middle room through another");
-                haveSuggestion = true;
-                curSuggestion.room = getPosRoom(dest);
-                curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
-                curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
-            } else { // we just on a tile
-                LOG_LOGIC("getting as close as possible to middle room");
-                haveSuggestion = false;
-            }
+        } else {
+            LOG_LOGIC("not yet in middle room, not making accusation yet - now annoying other players");
+            curSuggestion.room = getPosRoom(pos);
+            curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
+            curSuggestion.weapon = Weapon(rand() % (MAX_WEAPON + 1));
         }
-
-        return dest;
     }
-}
 
-Bot::Suggestion Bot::getSuggestion()
-{
-    std::lock_guard<std::mutex> l(lock);
-
-    if (!haveSuggestion)
-        throw std::runtime_error("Suggestion hasn't been set because getMove wasn't called before "
-                "getSuggestion() or we're currently outside of a room");
-    LOG_LOGIC("Making suggestion " + std::string(curSuggestion));
-    haveSuggestion = false;
     weMadeSuggestion = true;
     return curSuggestion;
 }
