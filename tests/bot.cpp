@@ -201,6 +201,7 @@ TEST_CASE("Bot class", "[bot]") {
         Bot bot(player, order);
 
         SECTION("incorrect use") {
+            bot.movePlayer(player, Board::ROOM_COUNT);
             REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
         }
 
@@ -227,6 +228,7 @@ TEST_CASE("Bot class", "[bot]") {
                         });
 
                 REQUIRE(bot.getMove(4) == 8);
+                bot.movePlayer(player, 8);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::DINING_ROOM);
                 REQUIRE_THAT(safePlayers, VectorContains(Bot::Card(sug.player)));
@@ -244,6 +246,7 @@ TEST_CASE("Bot class", "[bot]") {
                 bot.setCards(safeWeapons);
 
                 REQUIRE(bot.getMove(4) == 3);
+                bot.movePlayer(player, 3);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::GAMES_ROOM);
                 REQUIRE(!contains(safePlayers, Bot::Card(sug.player)));
@@ -258,6 +261,7 @@ TEST_CASE("Bot class", "[bot]") {
                         });
 
                 REQUIRE(bot.getMove(2) == 13);
+                bot.movePlayer(player, 13);
                 REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
             }
         }
@@ -344,6 +348,7 @@ TEST_CASE("Bot class", "[bot]") {
                         });
 
                 REQUIRE(bot.getMove(2) >= Board::ROOM_COUNT);
+                bot.movePlayer(player, Board::ROOM_COUNT);
                 REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
             }
 
@@ -355,6 +360,7 @@ TEST_CASE("Bot class", "[bot]") {
                             { other2, 32 }
                             });
                     bot.getMove(3);
+                    bot.movePlayer(player, 9);
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
                     REQUIRE_FALSE(contains(safePlayers, Bot::Card(sug.player)));
@@ -368,6 +374,7 @@ TEST_CASE("Bot class", "[bot]") {
                             { other2, 32 }
                             });
                     bot.getMove(3);
+                    bot.movePlayer(player, 2);
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
                     REQUIRE_FALSE(contains(safePlayers, Bot::Card(sug.player)));
@@ -389,6 +396,7 @@ TEST_CASE("Bot class", "[bot]") {
                             { other2, 32 }
                             });
                     bot.getMove(3);
+                    bot.movePlayer(player, 9);
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
                     REQUIRE_THAT(safePlayers, VectorContains(Bot::Card(sug.player)));
@@ -402,6 +410,7 @@ TEST_CASE("Bot class", "[bot]") {
                             { other2, 32 }
                             });
                     bot.getMove(3);
+                    bot.movePlayer(player, 2);
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
                     REQUIRE(contains(order, sug.player));
@@ -435,6 +444,7 @@ TEST_CASE("Bot class", "[bot]") {
                         });
 
                 REQUIRE(bot.getMove(3) == 0);
+                bot.movePlayer(player, 0);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.player == envelopePlayer);
                 REQUIRE(sug.weapon == envelopeWeapon);
@@ -449,6 +459,7 @@ TEST_CASE("Bot class", "[bot]") {
                         });
 
                 REQUIRE(bot.getMove(2) == 37);
+                bot.movePlayer(player, 37);
                 REQUIRE_THROWS_AS(bot.getSuggestion(), std::runtime_error&);
             }
         }
