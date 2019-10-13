@@ -364,7 +364,7 @@ namespace AI {
              * the AI player of all the cards the human player has been shown during the game. If
              * any cards are put "face-up" in the beginning of the game, also use this function to
              * notify the AI.
-             * \parm cards the cards
+             * \param cards the cards
              * \param tableCards if true, these are cards that were put face up on the table
              * \note This function only updates the cards, it doesn't replace it, meaning that you
              * can call this function twice with different cards and both sets of cards will be
@@ -431,6 +431,8 @@ namespace AI {
              *
              * \param allowedMoves the amount of moves that the AI can make (i.e. dice roll count)
              * \returns the position where the AI wants to move
+             * \note This will not move the bot to the requested position - if the move is accepted
+             * you still need to use movePlayer to tell the AI to move to the new position.
              */
             int getMove(int allowedMoves);
 
@@ -440,10 +442,8 @@ namespace AI {
              * This can be used to get a suggestion from the AI. If the AI is currently located in
              * the center room it can be assumed that the suggestion is in fact an accusation.
              *
-             * \throw std::runtime_error if called before calling getMove() or if called when
-             * getMove() returned a position outside of a room
-             * \warning You need to call getMove() before calling this otherwise an exception will
-             * be thrown
+             * \throw std::runtime_error if called when the bot is not currently located inside a
+             * room
              * \returns the suggestion made by the AI. An accusation if the AI is in the center room.
              */
             Suggestion getSuggestion();
@@ -469,12 +469,15 @@ namespace AI {
              * \param cards The cards that the AI has to choose from as specified by the server
              *
              * \throw std::invalid_argument if no valid cards are given
+             * \note The cards vector will be filtered so that only the cards that we have are used
              * \returns the card to show to the other player
              */
             Card getCard(Player player, std::vector<Card> cards);
 
             /**
              * \brief Used to notify the AI that a new turn has just started.
+             *
+             * This is used for internal cleanup.
              */
             void newTurn();
 
