@@ -20,6 +20,7 @@
 #include "../include/predictor.h"
 #include "../include/predictors/seen.h"
 #include "../include/predictors/multiple.h"
+#include "../include/predictors/no-show.h"
 
 using namespace AI;
 
@@ -334,6 +335,7 @@ Bot::Bot(const Player player, std::vector<Player> order) :
 
     predictors.push_back(new SeenPredictor());
     predictors.push_back(new MultiplePredictor());
+    predictors.push_back(new NoShowPredictor());
 }
 
 Bot::~Bot()
