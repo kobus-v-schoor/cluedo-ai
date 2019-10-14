@@ -740,6 +740,7 @@ bool Bot::findEnvelope()
 
             if (!found) {
                 envelope.player = Player(i);
+                notes[this->player][envelope.player].envelope = true;
                 envelope.havePlayer = true;
                 LOG_LOGIC("SOLVED: " + playerToStr(envelope.player) + " is the envelope player (all-lacks)");
                 break;
@@ -772,6 +773,7 @@ bool Bot::findEnvelope()
 
             if (noHas) {
                 envelope.player = noHasPlayer;
+                notes[this->player][envelope.player].envelope = true;
                 envelope.havePlayer = true;
                 LOG_LOGIC("SOLVED: " + playerToStr(envelope.player) + " is the envelope player (no-has)");
             }
@@ -790,6 +792,7 @@ bool Bot::findEnvelope()
 
             if (!found) {
                 envelope.weapon = Weapon(i);
+                notes[this->player][envelope.weapon].envelope = true;
                 envelope.haveWeapon = true;
                 LOG_LOGIC("SOLVED: " + weaponToStr(envelope.weapon) + " is the envelope weapon (all-lacks)");
                 break;
@@ -822,6 +825,7 @@ bool Bot::findEnvelope()
 
             if (noHas) {
                 envelope.weapon = noHasWeapon;
+                notes[this->player][envelope.weapon].envelope = true;
                 envelope.haveWeapon = true;
                 LOG_LOGIC("SOLVED: " + weaponToStr(envelope.weapon) + " is the envelope weapon (no-has)");
             }
@@ -840,6 +844,7 @@ bool Bot::findEnvelope()
 
             if (!found) {
                 envelope.room = Room(i);
+                notes[this->player][envelope.room].envelope = true;
                 envelope.haveRoom = true;
                 LOG_LOGIC("SOLVED: " + roomToStr(envelope.room) + " is the envelope room (all-lacks)");
                 break;
@@ -872,6 +877,7 @@ bool Bot::findEnvelope()
 
             if (noHas) {
                 envelope.room = noHasRoom;
+                notes[this->player][envelope.room].envelope = true;
                 envelope.haveRoom = true;
                 LOG_LOGIC("SOLVED: " + roomToStr(envelope.room) + " is the envelope room (no-has)");
             }

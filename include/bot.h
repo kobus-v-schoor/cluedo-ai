@@ -261,6 +261,11 @@ namespace AI {
                 bool table = false;
 
                 /**
+                 * \brief The card is an envelope card
+                 */
+                bool envelope = false;
+
+                /**
                  * \returns true if we know if the player has the card or not
                  */
                 bool concluded();

@@ -70,6 +70,7 @@ TEST_CASE("Bot class", "[bot]") {
         REQUIRE_FALSE(notes.lacks);
         REQUIRE_FALSE(notes.deduced);
         REQUIRE_FALSE(notes.table);
+        REQUIRE_FALSE(notes.envelope);
 
         notes.has = true;
         REQUIRE(notes.concluded());
@@ -575,6 +576,7 @@ TEST_CASE("Bot class", "[bot]") {
                     REQUIRE(bot.findEnvelope());
                     REQUIRE(bot.envelope.havePlayer);
                     REQUIRE(bot.envelope.player == ep);
+                    REQUIRE(bot.getNotes()[player][ep].envelope);
 
                     REQUIRE_FALSE(bot.findEnvelope());
                 }
@@ -591,6 +593,7 @@ TEST_CASE("Bot class", "[bot]") {
                     REQUIRE(bot.findEnvelope());
                     REQUIRE(bot.envelope.haveWeapon);
                     REQUIRE(bot.envelope.weapon == ew);
+                    REQUIRE(bot.getNotes()[player][ew].envelope);
 
                     REQUIRE_FALSE(bot.findEnvelope());
                 }
@@ -607,6 +610,7 @@ TEST_CASE("Bot class", "[bot]") {
                     REQUIRE(bot.findEnvelope());
                     REQUIRE(bot.envelope.haveRoom);
                     REQUIRE(bot.envelope.room == er);
+                    REQUIRE(bot.getNotes()[player][er].envelope);
 
                     REQUIRE_FALSE(bot.findEnvelope());
                 }
