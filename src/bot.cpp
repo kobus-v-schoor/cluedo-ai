@@ -425,7 +425,7 @@ int Bot::getMove(int allowedMoves)
 
     if (lookRoom && lookWP) {
         auto l = findLeastKnown();
-        if (l == Card::Type::ROOM)
+        if (l != Card::Type::ROOM)
             lookWP = false;
         else
             lookRoom = false;
