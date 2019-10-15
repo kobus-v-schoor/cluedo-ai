@@ -219,6 +219,16 @@ TEST_CASE("Bot class", "[bot]") {
             bot.setCards(safePlayers);
             bot.setCards(safeWeapons);
 
+            Bot::Weapon envelopeWeapon = Bot::CANDLESTICK;
+            for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                if (Bot::Weapon(i) != envelopeWeapon)
+                    bot.showCard(other1, Bot::Weapon(i));
+
+            Bot::Player envelopePlayer = Bot::MUSTARD;
+            for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                if (Bot::Player(i) != envelopePlayer)
+                    bot.showCard(other1, Bot::Player(i));
+
             Bot::Suggestion sug(Bot::Player(0), Bot::Weapon(0), Bot::Room(0));
 
             SECTION("enter wanted room") {
@@ -250,8 +260,7 @@ TEST_CASE("Bot class", "[bot]") {
                 bot.movePlayer(player, 3);
                 REQUIRE_NOTHROW(sug = bot.getSuggestion());
                 REQUIRE(sug.room == Bot::GAMES_ROOM);
-                REQUIRE(!contains(safePlayers, Bot::Card(sug.player)));
-                REQUIRE(!contains(safeWeapons, Bot::Card(sug.weapon)));
+                REQUIRE(contains(order, sug.player));
             }
 
             SECTION("enter tile") {
@@ -354,6 +363,12 @@ TEST_CASE("Bot class", "[bot]") {
             }
 
             SECTION("player")  {
+                Bot::Weapon envelopeWeapon = Bot::CANDLESTICK;
+
+                for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                    if (Bot::Weapon(i) != envelopeWeapon)
+                        bot.showCard(other1, Bot::Weapon(i));
+
                 SECTION("in safe room") {
                     bot.updateBoard({
                             { player, 23 },
@@ -379,7 +394,7 @@ TEST_CASE("Bot class", "[bot]") {
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
                     REQUIRE_FALSE(contains(safePlayers, Bot::Card(sug.player)));
-                    REQUIRE_FALSE(contains(safeWeapons, Bot::Card(sug.weapon)));
+                    REQUIRE(contains(safeWeapons, Bot::Card(sug.weapon)));
                 }
             }
 
@@ -414,8 +429,8 @@ TEST_CASE("Bot class", "[bot]") {
                     bot.movePlayer(player, 2);
 
                     REQUIRE_NOTHROW(sug = bot.getSuggestion());
-                    REQUIRE(contains(order, sug.player));
                     REQUIRE_FALSE(contains(safeWeapons, Bot::Card(sug.weapon)));
+                    REQUIRE(contains(safePlayers, Bot::Card(sug.player)));
                 }
             }
         }
@@ -493,6 +508,7 @@ TEST_CASE("Bot class", "[bot]") {
                 using Bot::getPosRoom;
                 using Bot::findNextMove;
                 using Bot::choosePlayerOffensive;
+                using Bot::findLeastKnown;
 
                 using Bot::player;
                 using Bot::notes;
@@ -951,6 +967,70 @@ TEST_CASE("Bot class", "[bot]") {
                 }
 
                 REQUIRE(bot.choosePlayerOffensive(choices, Bot::MAX_ROOM) == max);
+            }
+        }
+
+        SECTION("findLeastKnown") {
+            BotTest bot(player, order);
+
+            SECTION("players") {
+                std::vector<Bot::Player> players = { Bot::SCARLET, Bot::PLUM, Bot::PEACOCK };
+                std::vector<Bot::Weapon> weapons = { Bot::CANDLESTICK };
+                std::vector<Bot::Room> rooms = { Bot::STUDY, Bot::LIVING_ROOM };
+
+                for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                    if (!contains(players, Bot::Player(i)))
+                        bot.showCard(player, Bot::Player(i));
+
+                for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                    if (!contains(weapons, Bot::Weapon(i)))
+                        bot.showCard(player, Bot::Weapon(i));
+
+                for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                    if (!contains(rooms, Bot::Room(i)))
+                        bot.showCard(player, Bot::Room(i));
+
+                REQUIRE(bot.findLeastKnown() == Bot::Card::PLAYER);
+            }
+
+            SECTION("weapons") {
+                std::vector<Bot::Player> players = { Bot::SCARLET, Bot::PLUM };
+                std::vector<Bot::Weapon> weapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE, Bot::KNIFE };
+                std::vector<Bot::Room> rooms = { Bot::STUDY };
+
+                for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                    if (!contains(players, Bot::Player(i)))
+                        bot.showCard(player, Bot::Player(i));
+
+                for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                    if (!contains(weapons, Bot::Weapon(i)))
+                        bot.showCard(player, Bot::Weapon(i));
+
+                for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                    if (!contains(rooms, Bot::Room(i)))
+                        bot.showCard(player, Bot::Room(i));
+
+                REQUIRE(bot.findLeastKnown() == Bot::Card::WEAPON);
+            }
+
+            SECTION("room") {
+                std::vector<Bot::Player> players = { Bot::SCARLET };
+                std::vector<Bot::Weapon> weapons = { Bot::CANDLESTICK, Bot::LEAD_PIPE};
+                std::vector<Bot::Room> rooms = { Bot::STUDY, Bot::LIVING_ROOM, Bot::KITCHEN };
+
+                for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
+                    if (!contains(players, Bot::Player(i)))
+                        bot.showCard(player, Bot::Player(i));
+
+                for (int i = 0; i <= int(Bot::MAX_WEAPON); i++)
+                    if (!contains(weapons, Bot::Weapon(i)))
+                        bot.showCard(player, Bot::Weapon(i));
+
+                for (int i = 0; i <= int(Bot::MAX_ROOM); i++)
+                    if (!contains(rooms, Bot::Room(i)))
+                        bot.showCard(player, Bot::Room(i));
+
+                REQUIRE(bot.findLeastKnown() == Bot::Card::ROOM);
             }
         }
     }

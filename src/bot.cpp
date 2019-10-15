@@ -576,7 +576,7 @@ Bot::Suggestion Bot::getSuggestion()
     } else {
         LOG_LOGIC("not in safe room");
         if (deck.contains(room)) {
-            LOG_LOGIC("in a room with no conclusion, trying to isolate room");
+            LOG_LOGIC("in a room which we're still uncertain about, trying to isolate room");
 
             if (safePlayers.empty())
                 curSuggestion.player = deck.players[0];
