@@ -611,6 +611,11 @@ namespace AI {
             Player choosePlayerOffensive(std::vector<Player> choices, Bot::Room room);
 
             /**
+             * \brief returns the category we know least about
+             */
+            Card::Type findLeastKnown();
+
+            /**
              * \brief The player this bot is playing as
              */
             Player player;

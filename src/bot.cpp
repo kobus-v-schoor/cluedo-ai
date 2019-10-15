@@ -415,10 +415,26 @@ int Bot::getMove(int allowedMoves)
     runPredictors(deck);
     deck.sort();
 
-    if (!envelope.haveRoom) {
+    bool lookRoom = false;
+    bool lookWP = false;
+
+    if (!envelope.haveRoom)
+        lookRoom = true;
+    if (!envelope.havePlayer || !envelope.haveWeapon)
+        lookWP = true;
+
+    if (lookRoom && lookWP) {
+        auto l = findLeastKnown();
+        if (l == Card::Type::ROOM)
+            lookWP = false;
+        else
+            lookRoom = false;
+    }
+
+    if (lookRoom) {
         LOG_LOGIC("moving to find room");
         return findNextMove(allowedMoves, deck.rooms, !OCCUPIED_BLOCKED);
-    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
+    } else if (lookWP) {
         LOG_LOGIC("moving to find weapon or player");
 
         auto safeRooms = getSafeRooms();
@@ -519,64 +535,30 @@ Bot::Suggestion Bot::getSuggestion()
     auto safeWeapons = getSafeWeapons();
     auto safeRooms = getSafeRooms();
 
-    auto forcedRoom = [&](Room room) {
-        LOG_LOGIC("forced into room, trying to optimize player and weapon choice");
-        if (deck.players.empty() && deck.weapons.empty()) { // we know both, annoy a player
+    Room room = pos == 0 ? MAX_ROOM : getPosRoom(pos);
+    curSuggestion.room = room;
+
+    auto chooseWP = [&]() {
+        if (envelope.havePlayer && envelope.haveWeapon) { // we know both, annoy a player
+            LOG_LOGIC("we know both the envelope weapon and player, playing offensively");
             curSuggestion.player = choosePlayerOffensive(order, room);
             curSuggestion.weapon = Weapon(rand() % (int(MAX_WEAPON) + 1));
-        } else if (deck.players.empty()) { // we know the player, choose a good weapon
+        } else if (envelope.havePlayer) { // we know the player, choose a good weapon
+            LOG_LOGIC("we know the envelope player, optimizing weapon choice");
             curSuggestion.player = choosePlayerOffensive(safePlayers, room);
             curSuggestion.weapon = deck.weapons[0];
-        } else if (deck.weapons.empty()) { // we know the weapon, choose a good player
+        } else if (envelope.haveWeapon) { // we know the weapon, choose a good player
+            LOG_LOGIC("we know the envelope weapon, optimizing player choice");
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
         } else { // we don't know anything, choose good player and weapon
+            // TODO: possibly select based on what we know least about
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = deck.weapons[0];
         }
     };
 
-    if (!envelope.haveRoom) {
-        LOG_LOGIC("making suggestion to find room");
-        Room room = getPosRoom(pos);
-        curSuggestion.room = room;
-
-        if (contains(deck.rooms, room)) { // we're entering a wanted room
-            LOG_LOGIC("entering a wanted room, trying to isolate room card");
-            if (safePlayers.empty())
-                curSuggestion.player = deck.players[0];
-            else
-                curSuggestion.player = choosePlayerOffensive(safePlayers, room);
-
-            if (safeWeapons.empty())
-                curSuggestion.weapon = deck.weapons[0];
-            else
-                curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-        } else // we're entering an unwanted room
-            forcedRoom(room);
-    } else if (!envelope.havePlayer || !envelope.haveWeapon) {
-        LOG_LOGIC("making suggestion to find player or weapon");
-        Room room = getPosRoom(pos);
-        curSuggestion.room = room;
-
-        // new room is a safe room, we can isolate our wanted card
-        if (contains(safeRooms, room)) {
-            LOG_LOGIC("entering a safe room, trying to isolate player or weapon card");
-            if (!envelope.havePlayer) { // we're looking for a player
-                curSuggestion.player = deck.players[0];
-
-                if (safeWeapons.empty())
-                    curSuggestion.weapon = deck.weapons[0];
-                else
-                    curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
-            } else { // we're looking for a weapon
-                curSuggestion.player = choosePlayerOffensive(safePlayers, room);
-                curSuggestion.weapon = deck.weapons[0];
-            }
-        } else // we're entering an unwanted room
-            forcedRoom(room);
-    } else {
-        LOG_LOGIC("ready to accuse");
+    if (envelope.havePlayer && envelope.haveWeapon && envelope.haveRoom) {
         if (pos == 0) {
             LOG_LOGIC("in middle room, making accusation");
             curSuggestion.player = envelope.player;
@@ -587,6 +569,27 @@ Bot::Suggestion Bot::getSuggestion()
             curSuggestion.room = getPosRoom(pos);
             curSuggestion.player = choosePlayerOffensive(order, curSuggestion.room);
             curSuggestion.weapon = Weapon(rand() % (MAX_WEAPON + 1));
+        }
+    } else if (contains(safeRooms, room)) {
+        LOG_LOGIC("in safe room, trying to find weapon or player");
+        chooseWP();
+    } else {
+        LOG_LOGIC("not in safe room");
+        if (deck.contains(room)) {
+            LOG_LOGIC("in a room with no conclusion, trying to isolate room");
+
+            if (safePlayers.empty())
+                curSuggestion.player = deck.players[0];
+            else
+                curSuggestion.player = choosePlayerOffensive(safePlayers, room);
+
+            if (safeWeapons.empty())
+                curSuggestion.weapon = deck.weapons[0];
+            else
+                curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
+        } else {
+            LOG_LOGIC("in a room we already know about, trying to optimize weapon and player choice");
+            chooseWP();
         }
     }
 
@@ -1209,6 +1212,43 @@ Bot::Player Bot::choosePlayerOffensive(std::vector<Player> choices, Bot::Room ro
         return std::max_element(seenCount.begin(), seenCount.end(),
                 [](std::pair<Player, int> a, std::pair<Player, int> b) {
                 return a.second < b.second; })->first;
+}
+
+Bot::Card::Type Bot::findLeastKnown()
+{
+    int playerCount = 0;
+    int weaponCount = 0;
+    int roomCount = 0;
+
+    for (auto player : order) {
+        for (int i = 0; i <= int(MAX_PLAYER); i++)
+            if (notes[player][Player(i)].has)
+                playerCount++;
+
+        for (int i = 0; i <= int(MAX_WEAPON); i++)
+            if (notes[player][Weapon(i)].has)
+                weaponCount++;
+
+        for (int i = 0; i <= int(MAX_ROOM); i++)
+            if (notes[player][Room(i)].has)
+                roomCount++;
+    }
+
+    playerCount = int(MAX_PLAYER) - playerCount;
+    weaponCount = int(MAX_WEAPON) - weaponCount;
+    roomCount = int(MAX_ROOM) - roomCount;
+
+    if (playerCount > weaponCount) {
+        if (playerCount > roomCount)
+            return Card::PLAYER;
+        else
+            return Card::ROOM;
+    } else {
+        if (weaponCount > roomCount)
+            return Card::WEAPON;
+        else
+            return Card::ROOM;
+    }
 }
 
 // vim: set expandtab textwidth=100:
