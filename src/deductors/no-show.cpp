@@ -7,9 +7,11 @@
 
 using namespace AI;
 
-NoShowDeductor::NoShowDeductor(std::vector<Bot::Player> order) :
+NoShowDeductor::NoShowDeductor(Bot::Player player, std::vector<Bot::Player> order) :
     order(order)
-{}
+{
+    this->player = player;
+}
 
 bool NoShowDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
         std::map<Bot::Card, Bot::Notes>>& notes)

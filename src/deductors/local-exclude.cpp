@@ -7,6 +7,11 @@
 
 using namespace AI;
 
+LocalExcludeDeductor::LocalExcludeDeductor(Bot::Player player)
+{
+    this->player = player;
+}
+
 bool LocalExcludeDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player,
         std::map<Bot::Card, Bot::Notes>>& notes)
 {

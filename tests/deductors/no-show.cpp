@@ -9,7 +9,7 @@ TEST_CASE("NoShowDeductor", "[no-show-deductor]") {
 
     std::vector<Bot::Player> order = { Bot::SCARLET, Bot::PLUM, Bot::PEACOCK, Bot::GREEN };
 
-    NoShowDeductor deductor(order);
+    NoShowDeductor deductor(order[0], order);
 
     SECTION("no no-shows") {
         log.addSuggestion(Bot::SCARLET, Bot::Suggestion(Bot::SCARLET, Bot::CANDLESTICK, Bot::BEDROOM));

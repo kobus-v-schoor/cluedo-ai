@@ -16,7 +16,7 @@ namespace AI {
      */
     class CardCountExcludeDeductor : public Deductor {
         public:
-            CardCountExcludeDeductor(std::vector<Bot::Player> order);
+            CardCountExcludeDeductor(Bot::Player player, std::vector<Bot::Player> order);
 
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
         private:

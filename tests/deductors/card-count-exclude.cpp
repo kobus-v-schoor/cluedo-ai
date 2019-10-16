@@ -50,7 +50,7 @@ TEST_CASE("CardCountExclude", "[card-count-exclude-deductor]") {
 
     REQUIRE(deck.size() > 0);
 
-    CardCountExcludeDeductor deductor(order);
+    CardCountExcludeDeductor deductor(player, order);
 
     REQUIRE_FALSE(deductor.run(log, notes));
 

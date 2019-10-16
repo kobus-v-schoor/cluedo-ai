@@ -19,6 +19,9 @@ namespace AI {
              * \returns true if a deduction was made
              */
             virtual bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) =0;
+
+        protected:
+            Bot::Player player;
     };
 }
 

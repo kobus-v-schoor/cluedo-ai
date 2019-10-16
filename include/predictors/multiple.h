@@ -13,7 +13,7 @@ namespace AI {
      */
     class MultiplePredictor : public Predictor {
         public:
-            MultiplePredictor(){}
+            MultiplePredictor(Bot::Player player);
 
             void run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes,
                     Bot::SuggestionLog log) override;

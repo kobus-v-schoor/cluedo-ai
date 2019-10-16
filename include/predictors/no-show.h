@@ -13,7 +13,7 @@ namespace AI {
      */
     class NoShowPredictor : public Predictor {
         public:
-            NoShowPredictor(){}
+            NoShowPredictor(Bot::Player player);
 
             void run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes,
                     Bot::SuggestionLog log) override;

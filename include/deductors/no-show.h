@@ -17,7 +17,7 @@ namespace AI {
      */
     class NoShowDeductor : public Deductor {
         public:
-            NoShowDeductor(std::vector<Bot::Player> order);
+            NoShowDeductor(Bot::Player player, std::vector<Bot::Player> order);
 
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
 

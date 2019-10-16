@@ -15,7 +15,7 @@ namespace AI {
      */
     class SeenPredictor : public Predictor {
         public:
-            SeenPredictor(){}
+            SeenPredictor(Bot::Player player);
 
             void run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes,
                     Bot::SuggestionLog log) override;

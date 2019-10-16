@@ -7,9 +7,8 @@ TEST_CASE("NoShowPredictor", "[no-show-predictor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
     Deck deck;
-    NoShowPredictor predictor;
-
     Bot::Player askPlayer = Bot::SCARLET;
+    NoShowPredictor predictor(askPlayer);
 
     Bot::Player sugPlayer = Bot::SCARLET;
     Bot::Weapon sugWeapon = Bot::CANDLESTICK;

@@ -328,14 +328,14 @@ Bot::Bot(const Player player, std::vector<Player> order) :
     for (int i = 0; i <= int(MAX_ROOM); i++)
         notes[player][Room(i)].lacks = true;
 
-    deductors.push_back(new LocalExcludeDeductor());
-    deductors.push_back(new NoShowDeductor(order));
-    deductors.push_back(new SeenDeductor());
-    deductors.push_back(new CardCountExcludeDeductor(order));
+    deductors.push_back(new LocalExcludeDeductor(player));
+    deductors.push_back(new NoShowDeductor(player, order));
+    deductors.push_back(new SeenDeductor(player));
+    deductors.push_back(new CardCountExcludeDeductor(player, order));
 
-    predictors.push_back(new SeenPredictor());
-    predictors.push_back(new MultiplePredictor());
-    predictors.push_back(new NoShowPredictor());
+    predictors.push_back(new SeenPredictor(player));
+    predictors.push_back(new MultiplePredictor(player));
+    predictors.push_back(new NoShowPredictor(player));
 }
 
 Bot::~Bot()

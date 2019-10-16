@@ -7,6 +7,11 @@
 
 using namespace AI;
 
+SeenPredictor::SeenPredictor(Bot::Player player)
+{
+    this->player = player;
+}
+
 void SeenPredictor::run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes,
         Bot::SuggestionLog log)
 {

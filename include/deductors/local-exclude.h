@@ -22,7 +22,7 @@ namespace AI {
      */
     class LocalExcludeDeductor : public Deductor {
         public:
-            LocalExcludeDeductor(){}
+            LocalExcludeDeductor(Bot::Player player);
 
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
     };

@@ -7,10 +7,10 @@ TEST_CASE("LocalExcludeDeductor class", "[local-exclude-deductor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
 
-    LocalExcludeDeductor deductor;
-
     Bot::Player askPlayer = Bot::SCARLET;
     Bot::Player showPlayer = Bot::PLUM;
+
+    LocalExcludeDeductor deductor(askPlayer);
 
     Bot::Player sugPlayer = Bot::SCARLET;
     Bot::Weapon sugWeapon = Bot::CANDLESTICK;

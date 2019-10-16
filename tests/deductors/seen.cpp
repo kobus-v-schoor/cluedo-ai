@@ -7,10 +7,10 @@ TEST_CASE("SeenDeductor", "[seen-deductor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
 
-    SeenDeductor deductor;
-
     Bot::Player askPlayer = Bot::SCARLET;
     Bot::Player showPlayer = Bot::PLUM;
+
+    SeenDeductor deductor(askPlayer);
 
     Bot::Player sugPlayer = Bot::SCARLET;
     Bot::Weapon sugWeapon = Bot::CANDLESTICK;

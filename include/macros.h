@@ -66,21 +66,27 @@ namespace AI {
 #include <string.h>
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
+#define RED "\033[1;31m"
+#define YELLOW "\033[1;33m"
+#define NORMAL "\033[0m"
+#define CLEAR "\033[0m"
+
 /**
  * \brief This is the prefix that is added to all log messages
  */
-#define LOG_FORMAT __FILENAME__ << "(" << __LINE__ << "): "
+#define LOG_FORMAT(player, color) color << "(" << player << ") " <<  __FILENAME__ << "(" << __LINE__ << "): " << CLEAR
 
 #ifdef NO_LOGGING
     #define LOG_LOGIC(msg) do {} while(0)
     #define LOG_ERR(msg) do {} while(0)
+    #define LOG_INFO(msg) do {} while(0)
 #else
     /**
      * \brief Used to log serious error messages that should not be ignored
      *
      * All these log messages will be printed to stderr
      */
-    #define LOG_ERR(msg) std::cerr << "\033[1;31mERROR: " << LOG_FORMAT << msg << "\033[0m" << std::endl
+    #define LOG_ERR(msg) std::cerr << LOG_FORMAT("ERROR", RED) << msg << std::endl
 
     /**
      * \def NO_LOGIC_LOGGING
@@ -94,9 +100,27 @@ namespace AI {
          * \brief If defined, all logic logging will be sent directly to std out
          */
         #ifdef LOG_LOGIC_TO_COUT
-            #define LOG_LOGIC(msg) std::cout << LOG_FORMAT << msg << std::endl
+            #define LOG_LOGIC(msg) std::cout << LOG_FORMAT(Bot::playerToStr(this->player), YELLOW) << msg << std::endl
         #else
             #define LOG_LOGIC(msg) AI::logicLog.addLog(std::string(msg))
+        #endif
+    #endif
+
+    /**
+     * \def NO_INFO_LOGGING
+     * \brief If defined, AI will not log informational output
+     */
+    #ifdef NO_INFO_LOGGING
+        #define LOG_INFO(msg) do {} while (0)
+    #else
+        /**
+         * \def LOG_INFO_TO_COUT
+         * \brief If defined, all informational logging will be sent directly to std out
+         */
+        #ifdef LOG_INFO_TO_COUT
+            #define LOG_INFO(msg) std::cout << LOG_FORMAT(Bot::playerToStr(this->player), NORMAL) << msg << std::endl
+        #else
+            #define LOG_INFO(msg) AI::logicLog.addLog(std::string(msg))
         #endif
     #endif
 #endif

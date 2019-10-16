@@ -7,6 +7,11 @@
 
 using namespace AI;
 
+MultiplePredictor::MultiplePredictor(Bot::Player player)
+{
+    this->player = player;
+}
+
 void MultiplePredictor::run(Deck& deck, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>
         notes, Bot::SuggestionLog log)
 {

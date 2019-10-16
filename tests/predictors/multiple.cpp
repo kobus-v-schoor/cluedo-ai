@@ -7,9 +7,9 @@ TEST_CASE("MultiplePredictor", "[multiple-predictor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
     Deck deck;
-    MultiplePredictor predictor;
     Bot::Player sugPlayer = Bot::SCARLET;
     Bot::Weapon card = Bot::CANDLESTICK;
+    MultiplePredictor predictor(sugPlayer);
 
     log.addSuggestion(sugPlayer, Bot::Suggestion(Bot::Player(0), card, Bot::Room(0)));
     log.addNoShow();

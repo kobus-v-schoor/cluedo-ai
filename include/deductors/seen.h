@@ -15,7 +15,7 @@ namespace AI {
      */
     class SeenDeductor : public Deductor {
         public:
-            SeenDeductor(){}
+            SeenDeductor(Bot::Player player);
 
             bool run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>>& notes) override;
     };

@@ -7,10 +7,11 @@ TEST_CASE("SeenPredictor", "[seen-predictor]") {
     std::map<Bot::Player, std::map<Bot::Card, Bot::Notes>> notes;
     Bot::SuggestionLog log;
     Deck deck;
-    SeenPredictor predictor;
 
     Bot::Player askPlayer = Bot::SCARLET;
     Bot::Player showPlayer = Bot::PLUM;
+
+    SeenPredictor predictor(askPlayer);
 
     Bot::Player sugPlayer = Bot::SCARLET;
     Bot::Weapon sugWeapon = Bot::CANDLESTICK;

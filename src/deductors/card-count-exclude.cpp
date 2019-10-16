@@ -9,9 +9,11 @@ using namespace AI;
 
 std::vector<Bot::Card> CardCountExcludeDeductor::allCards;
 
-CardCountExcludeDeductor::CardCountExcludeDeductor(std::vector<Bot::Player> order) :
+CardCountExcludeDeductor::CardCountExcludeDeductor(Bot::Player player, std::vector<Bot::Player> order) :
     order(order)
 {
+    this->player = player;
+
     if (allCards.empty()) {
         for (int i = 0; i <= int(Bot::MAX_PLAYER); i++)
             allCards.push_back(Bot::Player(i));

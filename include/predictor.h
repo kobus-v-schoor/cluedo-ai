@@ -32,6 +32,7 @@ namespace AI {
             bool contains(Deck& deck, Bot::Player player);
             bool contains(Deck& deck, Bot::Weapon weapon);
             bool contains(Deck& deck, Bot::Room room);
+            Bot::Player player;
     };
 }
 

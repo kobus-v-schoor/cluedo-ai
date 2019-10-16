@@ -7,6 +7,11 @@
 
 using namespace AI;
 
+SeenDeductor::SeenDeductor(Bot::Player player)
+{
+    this->player = player;
+}
+
 bool SeenDeductor::run(Bot::SuggestionLog log, std::map<Bot::Player, std::map<Bot::Card,
         Bot::Notes>>& notes)
 {
