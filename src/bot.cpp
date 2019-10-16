@@ -468,11 +468,8 @@ int Bot::getMove(int allowedMoves)
         lookWP = true;
 
     if (lookRoom && lookWP) {
-        auto l = findLeastKnown();
-        if (l != Card::Type::ROOM)
-            lookWP = false;
-        else
-            lookRoom = false;
+        lookWP = true;
+        lookRoom = false;
     }
 
     if (lookRoom) {
@@ -598,7 +595,6 @@ Bot::Suggestion Bot::getSuggestion()
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = safeWeapons[rand() % safeWeapons.size()];
         } else { // we don't know anything, choose good player and weapon
-            // TODO: possibly select based on what we know least about
             curSuggestion.player = deck.players[0];
             curSuggestion.weapon = deck.weapons[0];
         }
