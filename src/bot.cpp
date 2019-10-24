@@ -422,7 +422,8 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
 
     LOG_INFO("adding suggestion to log: " + std::string(suggestion));
 
-    log.addSuggestion(player, suggestion);
+    if (!log.waiting())
+        log.addSuggestion(player, suggestion);
     if (contains(order, suggestion.player))
         board[suggestion.player] = getRoomPos(suggestion.room);
 }
