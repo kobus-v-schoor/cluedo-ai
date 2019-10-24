@@ -422,8 +422,9 @@ void Bot::madeSuggestion(Player player, Suggestion suggestion, bool accuse)
 
     LOG_INFO("adding suggestion to log: " + std::string(suggestion));
 
-    if (!log.waiting())
-        log.addSuggestion(player, suggestion);
+    if (log.waiting())
+        log.clear();
+    log.addSuggestion(player, suggestion);
     if (contains(order, suggestion.player))
         board[suggestion.player] = getRoomPos(suggestion.room);
 }
@@ -649,8 +650,9 @@ void Bot::showCard(Player player, Card card)
     notes[this->player][card].seen = true;
     notes[player][card].has = true;
     if (weMadeSuggestion) {
-        if (!log.waiting())
-            log.addSuggestion(this->player, curSuggestion);
+        if (log.waiting())
+            log.clear();
+        log.addSuggestion(this->player, curSuggestion);
         log.addShow(player);
         weMadeSuggestion = false;
     }
@@ -664,8 +666,9 @@ void Bot::noShowCard()
     LOG_INFO("nobody was able to show us a card");
 
     if (weMadeSuggestion) {
-        if (!log.waiting())
-            log.addSuggestion(this->player, curSuggestion);
+        if (log.waiting())
+            log.clear();
+        log.addSuggestion(this->player, curSuggestion);
         log.addNoShow();
         notesHook(true);
         weMadeSuggestion = false;
